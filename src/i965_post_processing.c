@@ -2894,8 +2894,8 @@ gen7_pp_plx_avs_initialize(VADriverContextP ctx, struct i965_post_processing_con
 
     sampler_8x8_state->dw136.default_sharpness_level = 0;
     sampler_8x8_state->dw137.adaptive_filter_for_all_channel = 1;
-    sampler_8x8_state->dw137.bypass_y_adaptive_filtering = 1;
-    sampler_8x8_state->dw137.bypass_x_adaptive_filtering = 1;
+    sampler_8x8_state->dw137.bypass_y_adaptive_filtering = 0;
+    sampler_8x8_state->dw137.bypass_x_adaptive_filtering = 0;
     dri_bo_unmap(pp_context->sampler_state_table.bo_8x8);
 
     /* sampler 8x8 */
