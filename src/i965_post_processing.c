@@ -2853,43 +2853,43 @@ gen7_pp_plx_avs_initialize(VADriverContextP ctx, struct i965_post_processing_con
     memset(sampler_8x8_state, 0, sizeof(*sampler_8x8_state));
 
     for (i = 0; i < 17; i++) {
-	float coff;
-	coff = i;
-	coff = coff / 16;
+	float coff0 = 0, coff1 = 0, coff2 = 0.25, coff3 = 0.25,
+            coff4 = 0.25, coff5 = 0.25, coff6 = 0, coff7 = 0;
+
         /* for Y channel, currently ignore */
-        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c0 = 0x0;
-        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c1 = 0x0;
-        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c2 = 0x0;
-        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c3 = intel_format_convert(1 - coff, 1, 6,0);
-        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c4 = intel_format_convert(coff, 1, 6, 0);
-        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c5 = 0x0;
-        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c6 = 0x0;
-        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c7 = 0x0;
-        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c0 = 0x0;
-        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c1 = 0x0;
-        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c2 = 0x0;
-        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c3 = intel_format_convert(1 - coff, 1, 6, 0);
-        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c4 = intel_format_convert(coff, 1, 6, 0);
-        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c5 = 0x0;
-        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c6 = 0x0;
-        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c7 = 0x0;
+        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c0 = intel_format_convert(coff0, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c1 = intel_format_convert(coff1, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c2 = intel_format_convert(coff2, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw0.table_0x_filter_c3 = intel_format_convert(coff3, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c4 = intel_format_convert(coff4, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c5 = intel_format_convert(coff5, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c6 = intel_format_convert(coff6, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw1.table_0x_filter_c7 = intel_format_convert(coff7, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c0 = intel_format_convert(coff0, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c1 = intel_format_convert(coff1, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c2 = intel_format_convert(coff2, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw2.table_0y_filter_c3 = intel_format_convert(coff3, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c4 = intel_format_convert(coff4, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c5 = intel_format_convert(coff5, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c6 = intel_format_convert(coff6, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw3.table_0y_filter_c7 = intel_format_convert(coff7, 1, 6, 0);
         /* for U/V channel, 0.25 */
-        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c0 = 0x0;
-        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c1 = 0x0;
-        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c2 = 0x0;
-        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c3 = intel_format_convert(1 - coff, 1, 6, 0);
-        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c4 = intel_format_convert(coff, 1, 6, 0);
-        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c5 = 0;
-        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c6 = 0x0;
-        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c7 = 0x0;
-        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c0 = 0x0;
-        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c1 = 0x0;
-        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c2 = 0x0;
-        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c3 = intel_format_convert(1 - coff, 1, 6, 0);
-        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c4 = intel_format_convert(coff, 1, 6, 0);
-        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c5 = 0x0;
-        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c6 = 0x0;
-        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c7 = 0x0;
+        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c0 = intel_format_convert(coff0, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c1 = intel_format_convert(coff1, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c2 = intel_format_convert(coff2, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw4.table_1x_filter_c3 = intel_format_convert(coff3, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c4 = intel_format_convert(coff4, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c5 = intel_format_convert(coff5, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c6 = intel_format_convert(coff6, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw5.table_1x_filter_c7 = intel_format_convert(coff7, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c0 = intel_format_convert(coff0, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c1 = intel_format_convert(coff1, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c2 = intel_format_convert(coff2, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw6.table_1y_filter_c3 = intel_format_convert(coff3, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c4 = intel_format_convert(coff4, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c5 = intel_format_convert(coff5, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c6 = intel_format_convert(coff6, 1, 6, 0);
+        sampler_8x8_state->coefficients[i].dw7.table_1y_filter_c7 = intel_format_convert(coff7, 1, 6, 0);
     }
 
     sampler_8x8_state->dw136.default_sharpness_level = 0;
