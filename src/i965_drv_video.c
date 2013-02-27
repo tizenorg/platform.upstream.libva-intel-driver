@@ -80,6 +80,13 @@
 
 #define HAS_BLENDING(ctx) ((ctx)->codec_info->has_blending)
 
+#define HAS_VP8_DECODING(ctx)   ((ctx)->codec_info->has_vp8_decoding && \
+                                 (ctx)->intel.has_bsd)
+
+#define HAS_VP8_ENCODING(ctx)   ((ctx)->codec_info->has_vp8_encoding && \
+                                 (ctx)->intel.has_bsd)
+
+
 static int get_sampling_from_fourcc(unsigned int fourcc);
 
 /* Check whether we are rendering to X11 (VA/X11 or VA/GLX API) */
@@ -418,6 +425,11 @@ i965_QueryConfigProfiles(VADriverContextP ctx,
         profile_list[i++] = VAProfileJPEGBaseline;
     }
 
+    if (HAS_VP8_DECODING(i965) ||
+        HAS_VP8_ENCODING(i965)) {
+        profile_list[i++] = VAProfileVP8Version0_3;
+    }
+
     /* If the assert fails then I965_MAX_PROFILES needs to be bigger */
     assert(i <= I965_MAX_PROFILES);
     *num_profiles = i;
@@ -472,6 +484,13 @@ i965_QueryConfigEntrypoints(VADriverContextP ctx,
         if (HAS_JPEG_DECODING(i965))
             entrypoint_list[n++] = VAEntrypointVLD;
         break;
+
+    case VAProfileVP8Version0_3:
+        if (HAS_VP8_DECODING(i965))
+            entrypoint_list[n++] = VAEntrypointVLD;
+        
+        if (HAS_VP8_ENCODING(i965))
+            entrypoint_list[n++] = VAEntrypointEncSlice;
 
     default:
         break;
@@ -623,6 +642,15 @@ i965_CreateConfig(VADriverContextP ctx,
         } else {
             vaStatus = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
         }
+
+        break;
+
+    case VAProfileVP8Version0_3:
+        if ((HAS_VP8_DECODING(i965) && VAEntrypointVLD == entrypoint) ||
+            (HAS_VP8_ENCODING(i965) && VAEntrypointEncSlice == entrypoint))
+            vaStatus = VA_STATUS_SUCCESS;
+        else
+            vaStatus = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
 
         break;
 
@@ -1956,6 +1984,10 @@ i965_BeginPicture(VADriverContextP ctx,
         break;
 
     case VAProfileNone:
+        vaStatus = VA_STATUS_SUCCESS;
+        break;
+
+    case VAProfileVP8Version0_3:
         vaStatus = VA_STATUS_SUCCESS;
         break;
 
