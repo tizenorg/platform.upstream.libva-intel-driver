@@ -1167,7 +1167,9 @@ i965_guess_surface_format(VADriverContextP ctx,
     if (!obj_config)
         return;
 
-    if (IS_GEN6(i965->intel.device_id) || IS_GEN7(i965->intel.device_id)) {
+    if (IS_GEN6(i965->intel.device_id) ||
+        IS_GEN7(i965->intel.device_id) ||
+        IS_GEN8(i965->intel.device_id)) {
         *fourcc = VA_FOURCC('N', 'V', '1', '2');
         *is_tiled = 1;
         return;
@@ -4248,7 +4250,8 @@ i965_GetSurfaceAttributes(
                     }
                 } else if (IS_GEN6(i965->intel.device_id)) {
                     attrib_list[i].value.value.i = VA_FOURCC('N', 'V', '1', '2');                    
-                } else if (IS_GEN7(i965->intel.device_id)) {
+                } else if (IS_GEN7(i965->intel.device_id) ||
+                           IS_GEN8(i965->intel.device_id)) {
                     if (obj_config->profile == VAProfileJPEGBaseline)
                         attrib_list[i].value.value.i = 0; /* internal format */
                     else
@@ -4324,7 +4327,8 @@ i965_GetSurfaceAttributes(
                             attrib_list[i].flags &= ~VA_SURFACE_ATTRIB_SETTABLE;
                         }
                     }
-                } else if (IS_GEN7(i965->intel.device_id)) {
+                } else if (IS_GEN7(i965->intel.device_id) ||
+                           IS_GEN8(i965->intel.device_id)) {
                     if (obj_config->entrypoint == VAEntrypointEncSlice ||
                         obj_config->entrypoint == VAEntrypointVideoProc) {
                         switch (attrib_list[i].value.value.i) {
