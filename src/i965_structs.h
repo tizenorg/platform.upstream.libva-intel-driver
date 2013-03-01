@@ -1280,6 +1280,48 @@ struct gen8_sampler_state
 	unsigned int nonsep_filter_foot_lowmask:8; 
    } ss3;
 };
+
+struct gen8_global_blend_state
+{
+    unsigned int pad0:19;
+    unsigned int ydither_offset:2;
+    unsigned int xdither_offset:2;
+    unsigned int color_dither_enable:1;
+    unsigned int alpha_test_func:3;
+    unsigned int alpha_test_enable:1;
+    unsigned int alpha_to_coverage_dither:1;
+    unsigned int alpha_to_one:1;
+    unsigned int ia_blend_enable:1;
+    unsigned int alpha_to_coverage:1;
+};
+
+struct gen8_blend_state_rt {
+    struct {
+        unsigned int blue_write_dis:1;
+        unsigned int green_write_dis:1;
+        unsigned int red_write_dis:1;
+        unsigned int alpha_write_dis:1;
+        unsigned int pad0:1;
+        unsigned int alpha_blend_func:3;
+        unsigned int ia_dest_blend_factor:5;
+        unsigned int ia_src_blend_factor:5;
+        unsigned int color_blend_func:3;
+        unsigned int dest_blend_factor:5;
+        unsigned int src_blend_factor:5;
+        unsigned int colorbuf_blend:1;
+    } blend0;
+
+    struct {
+        unsigned int post_blend_clamp_enable:1;
+        unsigned int pre_blend_clamp_enable:1;
+        unsigned int clamp_range:2;
+        unsigned int pre_blend_src_clamp:1;
+        unsigned int pad0:22;
+        unsigned int logic_op_func:4;
+        unsigned int logic_op_enable:1;
+    } blend1;
+};
+
 /* TODO: Add the sampler_8x8 for Gen8+. 
  * AVS/Convolve is 256DWs.
  * MinMaxfilter/Erode/Dilate: 8DWs*/
