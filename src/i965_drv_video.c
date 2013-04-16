@@ -2676,7 +2676,7 @@ i965_CreateImage(VADriverContextP ctx,
     struct object_image *obj_image;
     VAStatus va_status = VA_STATUS_ERROR_OPERATION_FAILED;
     VAImageID image_id;
-    unsigned int width2, height2, size2, size;
+    unsigned int size2, size, awidth, aheight;
 
     out_image->image_id = VA_INVALID_ID;
     out_image->buf      = VA_INVALID_ID;
@@ -2696,10 +2696,18 @@ i965_CreateImage(VADriverContextP ctx,
     image->image_id       = image_id;
     image->buf            = VA_INVALID_ID;
 
-    size    = width * height;
-    width2  = (width  + 1) / 2;
-    height2 = (height + 1) / 2;
-    size2   = width2 * height2;
+    awidth = ALIGN(width, 64);
+
+    if ((format->fourcc == VA_FOURCC('Y','V','1','2')) ||
+    		(format->fourcc == VA_FOURCC('I','4','2','0'))) {
+	if (awidth % 128 != 0) {
+		awidth = ALIGN(width, 128);	
+	}
+    }
+
+    aheight = ALIGN(height, 16);
+    size    = awidth * aheight;
+    size2    = (awidth / 2) * (aheight / 2);
 
     image->num_palette_entries = 0;
     image->entry_bytes         = 0;
@@ -2709,9 +2717,9 @@ i965_CreateImage(VADriverContextP ctx,
     case VA_FOURCC('I','A','4','4'):
     case VA_FOURCC('A','I','4','4'):
         image->num_planes = 1;
-        image->pitches[0] = width;
+        image->pitches[0] = awidth;
         image->offsets[0] = 0;
-        image->data_size  = image->offsets[0] + image->pitches[0] * height;
+        image->data_size  = image->offsets[0] + image->pitches[0] * aheight;
         image->num_palette_entries = 16;
         image->entry_bytes         = 3;
         image->component_order[0]  = 'R';
@@ -2721,9 +2729,9 @@ i965_CreateImage(VADriverContextP ctx,
     case VA_FOURCC('I','A','8','8'):
     case VA_FOURCC('A','I','8','8'):
         image->num_planes = 1;
-        image->pitches[0] = width * 2;
+        image->pitches[0] = awidth * 2;
         image->offsets[0] = 0;
-        image->data_size  = image->offsets[0] + image->pitches[0] * height;
+        image->data_size  = image->offsets[0] + image->pitches[0] * aheight;
         image->num_palette_entries = 256;
         image->entry_bytes         = 3;
         image->component_order[0]  = 'R';
@@ -2737,42 +2745,42 @@ i965_CreateImage(VADriverContextP ctx,
     case VA_FOURCC('B','G','R','X'):
     case VA_FOURCC('R','G','B','X'):
         image->num_planes = 1;
-        image->pitches[0] = width * 4;
+        image->pitches[0] = awidth * 4;
         image->offsets[0] = 0;
-        image->data_size  = image->offsets[0] + image->pitches[0] * height;
+        image->data_size  = image->offsets[0] + image->pitches[0] * aheight;
         break;
     case VA_FOURCC('Y','V','1','2'):
         image->num_planes = 3;
-        image->pitches[0] = width;
+        image->pitches[0] = awidth;
         image->offsets[0] = 0;
-        image->pitches[1] = width2;
-        image->offsets[1] = size + size2;
-        image->pitches[2] = width2;
-        image->offsets[2] = size;
+        image->pitches[1] = awidth / 2;
+        image->offsets[1] = size;
+        image->pitches[2] = awidth / 2;
+        image->offsets[2] = size + size2;
         image->data_size  = size + 2 * size2;
         break;
     case VA_FOURCC('I','4','2','0'):
         image->num_planes = 3;
-        image->pitches[0] = width;
+        image->pitches[0] = awidth;
         image->offsets[0] = 0;
-        image->pitches[1] = width2;
+        image->pitches[1] = awidth / 2;
         image->offsets[1] = size;
-        image->pitches[2] = width2;
+        image->pitches[2] = awidth / 2;
         image->offsets[2] = size + size2;
         image->data_size  = size + 2 * size2;
         break;
     case VA_FOURCC('N','V','1','2'):
         image->num_planes = 2;
-        image->pitches[0] = width;
+        image->pitches[0] = awidth;
         image->offsets[0] = 0;
-        image->pitches[1] = width;
+        image->pitches[1] = awidth;
         image->offsets[1] = size;
         image->data_size  = size + 2 * size2;
         break;
     case VA_FOURCC('Y','U','Y','2'):
     case VA_FOURCC('U','Y','V','Y'):
         image->num_planes = 1;
-        image->pitches[0] = width * 2;
+        image->pitches[0] = awidth * 2;
         image->offsets[0] = 0;
         image->data_size  = size * 2;
         break;
