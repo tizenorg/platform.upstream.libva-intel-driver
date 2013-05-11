@@ -34,6 +34,7 @@ make %{?_smp_mflags}
 %postun -p /sbin/ldconfig
 
 %files
+%license COPYING
 %defattr(-,root,root,-)
 %{_libdir}/dri/i965_drv_video.so
 
