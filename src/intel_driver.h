@@ -248,25 +248,35 @@ struct intel_region
 #define PCI_CHIP_BAYTRAIL_M_4           0x0157
 #define PCI_CHIP_BAYTRAIL_D             0x0155
 
-#define PCI_CHIP_BROADWELL_M_GT1_1        0x1606
-#define PCI_CHIP_BROADWELL_M_GT2_1        0x1616
-#define PCI_CHIP_BROADWELL_M_GT2PLUS_1        0x1626
+#define PCI_CHIP_BROADWELL_MS_GT1               0x1602
+#define PCI_CHIP_BROADWELL_MS_GT2               0x1612
+#define PCI_CHIP_BROADWELL_MS_GT2PLUS           0x1622
+#define PCI_CHIP_BROADWELL_MS_RSVD              0x1632
 
-#define PCI_CHIP_BROADWELL_M_GT1_2        0x160B
-#define PCI_CHIP_BROADWELL_M_GT2_2        0x161B
-#define PCI_CHIP_BROADWELL_M_GT2PLUS_2        0x162B
+#define PCI_CHIP_BROADWELL_M_GT1_1              0x1606
+#define PCI_CHIP_BROADWELL_M_GT2_1              0x1616
+#define PCI_CHIP_BROADWELL_M_GT2PLUS_1          0x1626
+#define PCI_CHIP_BROADWELL_M_RSVD_1             0x1636
 
-#define PCI_CHIP_BROADWELL_M_GT1_3        0x160E
-#define PCI_CHIP_BROADWELL_M_GT2_3        0x161E
-#define PCI_CHIP_BROADWELL_M_GT2PLUS_3        0x162E
+#define PCI_CHIP_BROADWELL_M_GT1_2              0x160B
+#define PCI_CHIP_BROADWELL_M_GT2_2              0x161B
+#define PCI_CHIP_BROADWELL_M_GT2PLUS_2          0x162B
+#define PCI_CHIP_BROADWELL_M_RSVD_2             0x163B
 
-#define PCI_CHIP_BROADWELL_D_GT1_1        0x160A
-#define PCI_CHIP_BROADWELL_D_GT2_1        0x161A
-#define PCI_CHIP_BROADWELL_D_GT2PLUS_1        0x162A
+#define PCI_CHIP_BROADWELL_M_GT1_3              0x160E
+#define PCI_CHIP_BROADWELL_M_GT2_3              0x161E
+#define PCI_CHIP_BROADWELL_M_GT2PLUS_3          0x162E
+#define PCI_CHIP_BROADWELL_M_RSVD_3             0x163E
 
-#define PCI_CHIP_BROADWELL_D_GT1_2        0x160D
-#define PCI_CHIP_BROADWELL_D_GT2_2        0x161D
-#define PCI_CHIP_BROADWELL_D_GT2PLUS_2        0x162D
+#define PCI_CHIP_BROADWELL_D_GT1_1              0x160A
+#define PCI_CHIP_BROADWELL_D_GT2_1              0x161A
+#define PCI_CHIP_BROADWELL_D_GT2PLUS_1          0x162A
+#define PCI_CHIP_BROADWELL_D_RSVD_1             0x163A
+
+#define PCI_CHIP_BROADWELL_D_GT1_2              0x160D
+#define PCI_CHIP_BROADWELL_D_GT2_2              0x161D
+#define PCI_CHIP_BROADWELL_D_GT2PLUS_2          0x162D
+#define PCI_CHIP_BROADWELL_D_RSVD_2             0x163D
 
 #define IS_G45(devid)           (devid == PCI_CHIP_IGD_E_G ||   \
                                  devid == PCI_CHIP_Q45_G ||     \
@@ -392,24 +402,37 @@ struct intel_region
                                  devid == PCI_CHIP_BROADWELL_M_GT1_2 || \
                                  devid == PCI_CHIP_BROADWELL_M_GT1_3 || \
                                  devid == PCI_CHIP_BROADWELL_D_GT1_1 || \
-                                 devid == PCI_CHIP_BROADWELL_D_GT1_2)
+                                 devid == PCI_CHIP_BROADWELL_D_GT1_2 || \
+                                 devid == PCI_CHIP_BROADWELL_MS_GT1)
 
 #define IS_BDW_GT2(devid)       (devid == PCI_CHIP_BROADWELL_M_GT2_1 || \
                                  devid == PCI_CHIP_BROADWELL_M_GT2_2 || \
                                  devid == PCI_CHIP_BROADWELL_M_GT2_3 || \
                                  devid == PCI_CHIP_BROADWELL_D_GT2_1 || \
-                                 devid == PCI_CHIP_BROADWELL_D_GT2_2)
+                                 devid == PCI_CHIP_BROADWELL_D_GT2_2 || \
+                                 devid == PCI_CHIP_BROADWELL_MS_GT2)
 
 #define IS_BDW_GT2PLUS(devid)       (devid == PCI_CHIP_BROADWELL_M_GT2PLUS_1 || \
                                  devid == PCI_CHIP_BROADWELL_M_GT2PLUS_2 || \
                                  devid == PCI_CHIP_BROADWELL_M_GT2PLUS_3 || \
                                  devid == PCI_CHIP_BROADWELL_D_GT2PLUS_1 || \
-                                 devid == PCI_CHIP_BROADWELL_D_GT2PLUS_2)
+                                 devid == PCI_CHIP_BROADWELL_D_GT2PLUS_2 || \
+                                     devid == PCI_CHIP_BROADWELL_MS_GT2PLUS)
+
+#define IS_BDW_RSVD(devid)      (devid == PCI_CHIP_BROADWELL_M_RSVD_1 || \
+                                 devid == PCI_CHIP_BROADWELL_M_RSVD_2 || \
+                                 devid == PCI_CHIP_BROADWELL_M_RSVD_3 || \
+                                 devid == PCI_CHIP_BROADWELL_D_RSVD_1 || \
+                                 devid == PCI_CHIP_BROADWELL_D_RSVD_2 || \
+                                 devid == PCI_CHIP_BROADWELL_MS_RSVD)
 
 #define IS_GEN8(devid)          (IS_BDW_GT1(devid) ||\
 					IS_BDW_GT2(devid) ||\
 					IS_BDW_GT2PLUS(devid))
-
+#define IS_GEN8(devid)          (IS_BDW_GT1(devid)      || \
+                                 IS_BDW_GT2(devid)      || \
+                                 IS_BDW_GT2PLUS(devid)  || \
+                                 IS_BDW_RSVD(devid))
 
 #ifndef I915_EXEC_VEBOX
 #define I915_EXEC_VEBOX         4
