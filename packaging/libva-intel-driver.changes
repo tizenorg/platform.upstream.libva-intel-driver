@@ -1,3 +1,6 @@
+* Wed Jun 19 2013 Anas Nashif <anas.nashif@intel.com> accepted/tizen/20130520.100021@21f51de
+- make wayland support conditional
+
 * Sat May 11 2013 Anas Nashif <anas.nashif@intel.com> submit/tizen/20130509.181405@fdc6f8a
 - Set license using %license
 
