@@ -1,3 +1,4 @@
+%bcond_with wayland
 Name:       libva-intel-driver
 Version:    1.0.19
 Release:    0
@@ -11,9 +12,11 @@ BuildRequires:  pkgconfig(xfixes)
 BuildRequires:  mesa-devel
 BuildRequires:  pkgconfig(libdrm)
 BuildRequires:  pkgconfig(libva)
+%if %{with wayland}
 BuildRequires:  pkgconfig(libva-wayland)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-client)
+%endif
 
 %description
 Intel Driver for Libva is a library providing the VA API video acceleration API.
@@ -23,7 +26,11 @@ Intel Driver for Libva is a library providing the VA API video acceleration API.
 
 %build
 %autogen
-%configure --enable-x11 --enable-drm --enable-wayland
+%configure --enable-x11 \
+%if %{with wayland}
+    --enable-wayland \
+%endif
+    --enable-drm 
 make %{?_smp_mflags}
 
 %install
