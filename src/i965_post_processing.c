@@ -5158,10 +5158,10 @@ i965_post_processing_init(VADriverContextP ctx)
 static const int procfilter_to_pp_flag[VAProcFilterCount] = {
     PP_NULL,    /* VAProcFilterNone */
     PP_NV12_DN, /* VAProcFilterNoiseReduction */
-    PP_NULL,    /* VAProcFilterDeblocking */
     PP_NV12_DNDI, /* VAProcFilterDeinterlacing */
     PP_NULL,    /* VAProcFilterSharpening */
     PP_NULL,    /* VAProcFilterColorBalance */
+    PP_NULL,    /* VAProcFilterDeblocking */
     PP_NULL,    /* VAProcFilterColorStandard */
     PP_NULL,    /* VAProcFilterFrameRateConversion */
 };
