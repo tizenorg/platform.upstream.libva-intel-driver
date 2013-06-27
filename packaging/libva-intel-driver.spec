@@ -6,7 +6,7 @@ Summary:    Intel Driver for Video Acceleration (VA) API for Linux
 Group:      System/Libraries
 License:    MIT
 URL:        http://freedesktop.org/wiki/Software/vaapi
-Source0:    http://cgit.freedesktop.org/vaapi/intel-driver/snapshot/intel-driver-%{version}.tar.bz2
+Source0:    %{name}-%{version}.tar.bz2
 BuildRequires:  pkgconfig(xext)
 BuildRequires:  pkgconfig(xfixes)
 BuildRequires:  mesa-devel
@@ -22,7 +22,7 @@ BuildRequires:  pkgconfig(wayland-client)
 Intel Driver for Libva is a library providing the VA API video acceleration API.
 
 %prep
-%setup -q -n intel-driver-%{version}
+%setup -q 
 
 %build
 %autogen
