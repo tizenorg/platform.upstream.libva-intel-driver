@@ -22,7 +22,7 @@ BuildRequires:  pkgconfig(wayland-client)
 Intel Driver for Libva is a library providing the VA API video acceleration API.
 
 %prep
-%setup -q -n intel-driver-%{version}
+%setup -q -n libva-intel-driver-%{version}
 
 %build
 %autogen
