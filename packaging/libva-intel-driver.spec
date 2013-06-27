@@ -1,6 +1,6 @@
 %bcond_with wayland
 Name:       libva-intel-driver
-Version:    1.0.19
+Version:    1.2.0pre
 Release:    0
 Summary:    Intel Driver for Video Acceleration (VA) API for Linux
 Group:      System/Libraries
