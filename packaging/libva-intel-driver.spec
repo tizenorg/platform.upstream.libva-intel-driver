@@ -7,6 +7,7 @@ Group:      System/Libraries
 License:    MIT
 URL:        http://freedesktop.org/wiki/Software/vaapi
 Source0:    http://cgit.freedesktop.org/vaapi/intel-driver/snapshot/intel-driver-%{version}.tar.bz2
+Source1001: 	libva-intel-driver.manifest
 BuildRequires:  pkgconfig(xext)
 BuildRequires:  pkgconfig(xfixes)
 BuildRequires:  mesa-devel
@@ -23,6 +24,7 @@ Intel Driver for Libva is a library providing the VA API video acceleration API.
 
 %prep
 %setup -q -n intel-driver-%{version}
+cp %{SOURCE1001} .
 
 %build
 %autogen
@@ -41,6 +43,7 @@ make %{?_smp_mflags}
 %postun -p /sbin/ldconfig
 
 %files
+%manifest %{name}.manifest
 %license COPYING
 %defattr(-,root,root,-)
 %{_libdir}/dri/i965_drv_video.so
