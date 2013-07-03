@@ -1,5 +1,6 @@
-* Thur June 27 2013 Halley Zhao <halley.zhao@intel.com> 1.2.0pre@e2b6e0f
-- update to 1.2.0pre (1.2.0 minus libdrm 2.4.45 requirement)
+* Wed Jul 03 2013 Zhao Halley <halley.zhao@intel.com> 1.2.0pre@e2b6e0f
+- use %{name} to avoid unexpected gbs build failure
+- update to 1.2.0pre
 
 * Wed Jun 19 2013 Anas Nashif <anas.nashif@intel.com> accepted/tizen/20130520.100021@21f51de
 - make wayland support conditional
