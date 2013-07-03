@@ -1,3 +1,7 @@
+* Wed Jul 03 2013 Zhao Halley <halley.zhao@intel.com> submit/tizen/20130703.092011@9d38a4a
+- re-tag upstream branch to avoid unnecessary patch for tizen branch
+- update changelog for gbs submit
+
 * Wed Jul 03 2013 Zhao Halley <halley.zhao@intel.com> 1.2.0pre@e2b6e0f
 - use %{name} to avoid unexpected gbs build failure
 - update to 1.2.0pre
