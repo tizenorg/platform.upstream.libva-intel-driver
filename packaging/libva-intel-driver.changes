@@ -1,3 +1,6 @@
+* Mon Jul 15 2013 Zhao Halley <halley.zhao@intel.com> submit/tizen/20130703.092823@0291279
+- Enable the Bay Trail platform.
+
 * Wed Jul 03 2013 Zhao Halley <halley.zhao@intel.com> submit/tizen/20130703.092011@9d38a4a
 - re-tag upstream branch to avoid unnecessary patch for tizen branch
 - update changelog for gbs submit
