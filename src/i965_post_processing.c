@@ -355,7 +355,7 @@ static struct pp_module pp_modules_gen5[] = {
             NULL,
         },
 
-        pp_plx_load_save_plx_initialize,
+        pp_null_initialize,
     },
 
 };
@@ -612,7 +612,7 @@ static struct pp_module pp_modules_gen6[] = {
             NULL,
         },
 
-        pp_plx_load_save_plx_initialize,
+        pp_null_initialize,
     },
 };
 
