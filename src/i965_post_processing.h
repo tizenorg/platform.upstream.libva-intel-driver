@@ -53,6 +53,7 @@ enum
     PP_PA_LOAD_SAVE_PL3,
     PP_RGBX_LOAD_SAVE_NV12,
     PP_NV12_LOAD_SAVE_RGBX,
+    PP_NV12_BLEND,
     NUM_PP_MODULES,
 };
 
@@ -96,6 +97,12 @@ struct pp_dndi_context
 };
 
 struct pp_dn_context
+{
+    int dest_w;
+    int dest_h;
+};
+
+struct pp_blending_context
 {
     int dest_w;
     int dest_h;
@@ -336,7 +343,11 @@ struct gen7_pp_static_parameter
 {
     struct {
         /* r1.0-r1.5 */
-        unsigned int padx[6];
+        unsigned int blending_flags;
+        float        blending_alpha;
+        float        blending_min_luma;
+        float        blending_max_luma;
+        unsigned int padx[2];
         /* r1.6 */
         unsigned int di_statistics_surface_pitch_div2:16;
         unsigned int di_statistics_surface_height_div4:16;
@@ -481,6 +492,7 @@ struct i965_post_processing_context
         struct pp_avs_context pp_avs_context;
         struct pp_dndi_context pp_dndi_context;
         struct pp_dn_context pp_dn_context;
+        struct pp_blending_context pp_blending_context;
     } private_context;
 
     int (*pp_x_steps)(void *private_context);

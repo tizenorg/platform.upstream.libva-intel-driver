@@ -91,7 +91,6 @@ static const uint32_t pp_nv12_avs_gen5[][4] = {
 static const uint32_t pp_nv12_dndi_gen5[][4] = {
 #include "shaders/post_processing/gen5_6/nv12_dndi_nv12.g4b.gen5"
 };
-
 static const uint32_t pp_nv12_dn_gen5[][4] = {
 #include "shaders/post_processing/gen5_6/nv12_dn_nv12.g4b.gen5"
 };
@@ -118,6 +117,9 @@ static const uint32_t pp_rgbx_load_save_nv12_gen5[][4] = {
 
 static const uint32_t pp_nv12_load_save_rgbx_gen5[][4] = {
 #include "shaders/post_processing/gen5_6/nv12_load_save_rgbx.g4b.gen5"
+};
+
+static const uint32_t pp_nv12_blending_gen5[][4] = {
 };
 
 static VAStatus pp_null_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
@@ -343,6 +345,19 @@ static struct pp_module pp_modules_gen5[] = {
     
         pp_plx_load_save_plx_initialize,
     },
+
+    {
+        {
+            "NV12_BLEND module",
+            PP_NV12_BLEND,
+            pp_nv12_blending_gen5,
+            sizeof(pp_nv12_blending_gen5),
+            NULL,
+        },
+
+        pp_plx_load_save_plx_initialize,
+    },
+
 };
 
 static const uint32_t pp_null_gen6[][4] = {
@@ -403,6 +418,9 @@ static const uint32_t pp_rgbx_load_save_nv12_gen6[][4] = {
 
 static const uint32_t pp_nv12_load_save_rgbx_gen6[][4] = {
 #include "shaders/post_processing/gen5_6/nv12_load_save_rgbx.g6b"
+};
+
+static const uint32_t pp_nv12_blending_gen6[][4] = {
 };
 
 static struct pp_module pp_modules_gen6[] = {
@@ -584,6 +602,18 @@ static struct pp_module pp_modules_gen6[] = {
     
         pp_plx_load_save_plx_initialize,
     },
+
+    {
+        {
+            "NV12_BLEND module",
+            PP_NV12_BLEND,
+            pp_nv12_blending_gen6,
+            sizeof(pp_nv12_blending_gen6),
+            NULL,
+        },
+
+        pp_plx_load_save_plx_initialize,
+    },
 };
 
 static const uint32_t pp_null_gen7[][4] = {
@@ -616,7 +646,6 @@ static const uint32_t pp_nv12_avs_gen7[][4] = {
 static const uint32_t pp_nv12_dndi_gen7[][4] = {
 #include "shaders/post_processing/gen7/dndi.g7b"
 };
-
 static const uint32_t pp_nv12_dn_gen7[][4] = {
 #include "shaders/post_processing/gen7/nv12_dn_nv12.g7b"
 };
@@ -638,6 +667,10 @@ static const uint32_t pp_rgbx_load_save_nv12_gen7[][4] = {
 static const uint32_t pp_nv12_load_save_rgbx_gen7[][4] = {
 #include "shaders/post_processing/gen7/pl2_to_rgbx.g7b"
 };
+static const uint32_t pp_nv12_blending_gen7[][4] = {
+#include "shaders/post_processing/gen7/blending.g7b"
+};
+
 
 static VAStatus gen7_pp_plx_avs_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
                                            const struct i965_surface *src_surface,
@@ -657,12 +690,18 @@ static VAStatus gen7_pp_nv12_dn_initialize(VADriverContextP ctx, struct i965_pos
                                            struct i965_surface *dst_surface,
                                            const VARectangle *dst_rect,
                                            void *filter_param);
-
 static VAStatus gen7_pp_rgbx_avs_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
                                            const struct i965_surface *src_surface,
                                            const VARectangle *src_rect,
                                            struct i965_surface *dst_surface,
                                            const VARectangle *dst_rect,
+                                           void *filter_param);
+
+static VAStatus gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
+                                           const struct i965_surface *src_surface,
+                                           const VARectangle *src_rect,
+                                           struct i965_surface *ref_surface,
+                                           const VARectangle *ref_rect,
                                            void *filter_param);
 
 static struct pp_module pp_modules_gen7[] = {
@@ -773,6 +812,7 @@ static struct pp_module pp_modules_gen7[] = {
 
         gen7_pp_nv12_dn_initialize,
     },
+
     {
         {
             "NV12_PA module",
@@ -844,6 +884,18 @@ static struct pp_module pp_modules_gen7[] = {
     
         gen7_pp_plx_avs_initialize,
     },
+
+    {
+        {
+            "NV12_BLEND module",
+            PP_NV12_BLEND,
+            pp_nv12_blending_gen7,
+            sizeof(pp_nv12_blending_gen7),
+            NULL,
+        },
+
+        gen7_pp_nv12_blending_initialize,
+    },
             
 };
 
@@ -898,6 +950,9 @@ static const uint32_t pp_rgbx_load_save_nv12_gen75[][4] = {
 };
 static const uint32_t pp_nv12_load_save_rgbx_gen75[][4] = {
 #include "shaders/post_processing/gen7/pl2_to_rgbx.g75b"
+};
+static const uint32_t pp_nv12_blending_gen75[][4] = {
+#include "shaders/post_processing/gen7/blending.g75b"
 };
 
 static struct pp_module pp_modules_gen75[] = {
@@ -1079,6 +1134,18 @@ static struct pp_module pp_modules_gen75[] = {
         },
     
         gen7_pp_plx_avs_initialize,
+    },
+
+    {
+        {
+            "NV12_BLEND module",
+            PP_NV12_BLEND,
+            pp_nv12_blending_gen75,
+            sizeof(pp_nv12_blending_gen75),
+            NULL,
+        },
+
+        gen7_pp_nv12_blending_initialize,
     },
             
 };
@@ -3072,6 +3139,7 @@ gen7_pp_rgbx_avs_initialize(VADriverContextP ctx, struct i965_post_processing_co
     return VA_STATUS_SUCCESS;
 }
 
+
 static int
 pp_dndi_x_steps(void *private_context)
 {
@@ -3918,6 +3986,102 @@ gen7_pp_nv12_dn_initialize(VADriverContextP ctx, struct i965_post_processing_con
     pp_dn_context->dest_h = h;
 
     dst_surface->flags = src_surface->flags;
+
+    return VA_STATUS_SUCCESS;
+}
+
+static int
+gen7_pp_blending_x_steps(void *private_context)
+{
+    struct pp_blending_context *pp_blending_context = private_context;
+
+    return pp_blending_context->dest_w / 16;
+}
+
+static int
+gen7_pp_blending_y_steps(void *private_context)
+{
+    struct pp_blending_context *pp_blending_context = private_context;
+
+    return pp_blending_context->dest_h / 16;
+}
+
+static int
+gen7_pp_blending_set_block_parameter(struct i965_post_processing_context *pp_context, int x, int y)
+{
+    struct gen7_pp_inline_parameter *pp_inline_parameter = pp_context->pp_inline_parameter;
+
+    pp_inline_parameter->grf7.destination_block_horizontal_origin = x * 16;
+    pp_inline_parameter->grf7.destination_block_vertical_origin = y * 16;
+
+    return 0;
+}
+
+static VAStatus
+gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
+                           const struct i965_surface *src_surface,
+                           const VARectangle *src_rect,
+                           struct i965_surface *ref_surface,
+                           const VARectangle *ref_rect,
+                           void *filter_param)
+{
+    struct i965_driver_data *i965 = i965_driver_data(ctx);
+    struct gen7_pp_static_parameter *pp_static_parameter = pp_context->pp_static_parameter;
+    struct pp_blending_context *pp_blending_context = (struct pp_blending_context *)&pp_context->private_context;
+    VABlendState *blend_state = (VABlendState*)filter_param;
+    struct object_surface *obj_surface;
+    int orig_w, orig_h, w, h;
+
+    /* source surface, processed result will also store here */
+    obj_surface = (struct object_surface *)src_surface->base;
+    orig_w = obj_surface->orig_width;
+    orig_h = obj_surface->orig_height;
+    w = obj_surface->width;
+    h = obj_surface->height;
+
+    /* source Y surface index 0 */
+    gen7_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, 0,
+                              orig_w / 4, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
+                              0, 0);
+
+    /* source UV surface index 1 */
+    gen7_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, w * h,
+                              orig_w / 4, orig_h / 2, w, I965_SURFACEFORMAT_R8G8_UNORM,
+                              1, 0);
+
+    /* reference/mask surface state */
+    obj_surface = (struct object_surface *)ref_surface->base;
+    orig_w = obj_surface->orig_width;
+    orig_h = obj_surface->orig_height;
+    w = obj_surface->width;
+    h = obj_surface->height;
+
+    /* reference Y surface index 2 */
+    gen7_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, 0,
+                              orig_w / 4, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
+                              2, 0);
+
+    /* reference UV surface index 3 */
+    gen7_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, w * h,
+                              orig_w / 4, orig_h / 2, w, I965_SURFACEFORMAT_R8G8_UNORM,
+                              3, 0);
+
+    /* private function & data */
+    pp_context->pp_x_steps = gen7_pp_blending_x_steps;
+    pp_context->pp_y_steps = gen7_pp_blending_y_steps;
+    pp_context->pp_set_block_parameter = gen7_pp_blending_set_block_parameter;
+
+    pp_blending_context->dest_w = ALIGN(ref_rect->width, 16);
+    pp_blending_context->dest_h = ALIGN(ref_rect->height, 16);
+
+    pp_static_parameter->grf1.blending_flags = blend_state->flags;
+    pp_static_parameter->grf1.blending_alpha = blend_state->global_alpha;
+    pp_static_parameter->grf1.blending_min_luma = blend_state->min_luma;
+    pp_static_parameter->grf1.blending_max_luma = blend_state->max_luma;
 
     return VA_STATUS_SUCCESS;
 }
@@ -5322,6 +5486,36 @@ i965_proc_picture(VADriverContextP ctx,
         }
     }
 
+    if (pipeline_param->blend_state && IS_GEN7(i965->intel.device_id)){
+        VABlendState* blend_state = pipeline_param->blend_state;
+        struct i965_surface ref_surface;
+        VARectangle ref_rect;
+        assert(blend_state->flags & VA_BLEND_GLOBAL_ALPHA ||
+               blend_state->flags & VA_BLEND_LUMA_KEY);
+
+        assert(pipeline_param->forward_references != NULL);
+
+        VASurfaceID forward_reference = pipeline_param->forward_references[0];
+        obj_surface = SURFACE(forward_reference);
+        assert(obj_surface && obj_surface->fourcc == VA_FOURCC('N','V','1','2'));
+
+        ref_surface.base = (struct object_base *)obj_surface;
+        ref_surface.type = I965_SURFACE_TYPE_SURFACE;
+
+        ref_rect.x = 0;
+        ref_rect.y = 0;
+        ref_rect.width = obj_surface->orig_width;
+        ref_rect.height = obj_surface->orig_height;
+
+        status = i965_post_processing_internal(ctx, &proc_context->pp_context,
+                                               &src_surface,
+                                               &src_rect,
+                                               &ref_surface,
+                                               &ref_rect,
+                                               PP_NV12_BLEND,
+                                               (void*)blend_state);
+    }
+
     obj_surface = SURFACE(proc_state->current_render_target);
     assert(obj_surface);
     
@@ -5357,6 +5551,7 @@ i965_proc_picture(VADriverContextP ctx,
         src_rect.height == dst_rect.height &&
         src_rect.x == dst_rect.x &&
         src_rect.y == dst_rect.y) {
+
         i965_post_processing_internal(ctx, &proc_context->pp_context,
                                       &src_surface,
                                       &src_rect,
