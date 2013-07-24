@@ -4025,7 +4025,6 @@ gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processi
                            const VARectangle *ref_rect,
                            void *filter_param)
 {
-    struct i965_driver_data *i965 = i965_driver_data(ctx);
     struct gen7_pp_static_parameter *pp_static_parameter = pp_context->pp_static_parameter;
     struct pp_blending_context *pp_blending_context = (struct pp_blending_context *)&pp_context->private_context;
     VABlendState *blend_state = (VABlendState*)filter_param;
@@ -5487,7 +5486,7 @@ i965_proc_picture(VADriverContextP ctx,
     }
 
     if (pipeline_param->blend_state && IS_GEN7(i965->intel.device_id)){
-        VABlendState* blend_state = pipeline_param->blend_state;
+        const VABlendState* blend_state = pipeline_param->blend_state;
         struct i965_surface ref_surface;
         VARectangle ref_rect;
         assert(blend_state->flags & VA_BLEND_GLOBAL_ALPHA ||
