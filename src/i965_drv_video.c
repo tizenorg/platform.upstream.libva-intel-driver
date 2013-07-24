@@ -78,6 +78,8 @@
 
 #define HAS_TILED_SURFACE(ctx) ((ctx)->codec_info->has_tiled_surface)
 
+#define HAS_BLENDING(ctx) ((ctx)->codec_info->has_blending)
+
 static int get_sampling_from_fourcc(unsigned int fourcc);
 
 /* Check whether we are rendering to X11 (VA/X11 or VA/GLX API) */
@@ -256,6 +258,7 @@ static struct hw_codec_info gen7_hw_codec_info = {
     .has_accelerated_getimage = 1,
     .has_accelerated_putimage = 1,
     .has_tiled_surface = 1,
+    .has_blending = 1,
 
     .num_filters = 2,
     .filters = {
@@ -283,6 +286,8 @@ static struct hw_codec_info gen75_hw_codec_info = {
     .has_accelerated_putimage = 1,
     .has_tiled_surface = 1,
     .has_di_motion_adptive = 1,
+    .has_blending = 1,
+
     .num_filters = 4,
     .filters = {
         { VAProcFilterNoiseReduction, I965_RING_VEBOX },
@@ -4722,6 +4727,9 @@ VAStatus i965_QueryVideoProcPipelineCaps(
     pipeline_cap->input_color_standards = vpp_input_color_standards;
     pipeline_cap->num_output_color_standards = 1;
     pipeline_cap->output_color_standards = vpp_output_color_standards;
+
+    if (HAS_BLENDING(i965))
+       pipeline_cap->blend_flags = VA_BLEND_LUMA_KEY | VA_BLEND_GLOBAL_ALPHA;
 
     for (i = 0; i < num_filters; i++) {
         struct object_buffer *obj_buffer = BUFFER(filters[i]);

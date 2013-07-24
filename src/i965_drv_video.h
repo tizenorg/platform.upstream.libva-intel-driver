@@ -291,6 +291,7 @@ struct hw_codec_info
     unsigned int has_tiled_surface:1;
     unsigned int has_di_motion_adptive:1;
     unsigned int has_di_motion_compensated:1;
+    unsigned int has_blending:1;
 
     unsigned int num_filters;
     struct i965_filter filters[VAProcFilterCount];
