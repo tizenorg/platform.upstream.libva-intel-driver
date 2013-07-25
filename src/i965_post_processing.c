@@ -4012,9 +4012,10 @@ static int
 gen7_pp_blending_set_block_parameter(struct i965_post_processing_context *pp_context, int x, int y)
 {
     struct gen7_pp_inline_parameter *pp_inline_parameter = pp_context->pp_inline_parameter;
+    struct pp_blending_context *pp_blending_context = (struct pp_blending_context *)&pp_context->private_context;
 
-    pp_inline_parameter->grf7.destination_block_horizontal_origin = x * 16;
-    pp_inline_parameter->grf7.destination_block_vertical_origin = y * 16;
+    pp_inline_parameter->grf7.destination_block_horizontal_origin = x * 16 + pp_blending_context->dest_x;
+    pp_inline_parameter->grf7.destination_block_vertical_origin = y * 16 + pp_blending_context->dest_y;
 
     return 0;
 }
@@ -4076,6 +4077,8 @@ gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processi
     pp_context->pp_y_steps = gen7_pp_blending_y_steps;
     pp_context->pp_set_block_parameter = gen7_pp_blending_set_block_parameter;
 
+    pp_blending_context->dest_x = dst_rect->x;
+    pp_blending_context->dest_y = dst_rect->y;
     pp_blending_context->dest_w = ALIGN(dst_rect->width, 16);
     pp_blending_context->dest_h = ALIGN(dst_rect->height, 16);
 

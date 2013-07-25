@@ -104,6 +104,8 @@ struct pp_dn_context
 
 struct pp_blending_context
 {
+    int dest_x;
+    int dest_y;
     int dest_w;
     int dest_h;
 };
