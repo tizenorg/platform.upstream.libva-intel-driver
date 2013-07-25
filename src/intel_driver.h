@@ -269,10 +269,10 @@ struct intel_region
 #define IS_GEN6(devid)          (IS_SNB_GT1(devid) ||   \
                                  IS_SNB_GT2(devid))
 
-#define IS_BAYTRAIL_M1(devid)    (devid = PCI_CHIP_BAYTRAIL_M_1)
-#define IS_BAYTRAIL_M2(devid)    (devid = PCI_CHIP_BAYTRAIL_M_2)
-#define IS_BAYTRAIL_M3(devid)    (devid = PCI_CHIP_BAYTRAIL_M_3)
-#define IS_BAYTRAIL_D(devid)     (devid = PCI_CHIP_BAYTRAIL_D)
+#define IS_BAYTRAIL_M1(devid)    (devid == PCI_CHIP_BAYTRAIL_M_1)
+#define IS_BAYTRAIL_M2(devid)    (devid == PCI_CHIP_BAYTRAIL_M_2)
+#define IS_BAYTRAIL_M3(devid)    (devid == PCI_CHIP_BAYTRAIL_M_3)
+#define IS_BAYTRAIL_D(devid)     (devid == PCI_CHIP_BAYTRAIL_D)
 #define IS_BAYTRAIL(devid)       (IS_BAYTRAIL_M1(devid) || \
                                   IS_BAYTRAIL_M2(devid) || \
                                   IS_BAYTRAIL_M3(devid) || \
