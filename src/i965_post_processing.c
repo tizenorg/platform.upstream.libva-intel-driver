@@ -40,6 +40,8 @@
 #include "i965_render.h"
 #include "intel_media.h"
 
+#define HAS_BLENDING(ctx) ((ctx)->codec_info->has_blending)
+
 #define HAS_PP(ctx) (IS_IRONLAKE((ctx)->intel.device_id) ||     \
                      IS_GEN6((ctx)->intel.device_id) ||         \
                      IS_GEN7((ctx)->intel.device_id))
@@ -700,8 +702,8 @@ static VAStatus gen7_pp_rgbx_avs_initialize(VADriverContextP ctx, struct i965_po
 static VAStatus gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
                                            const struct i965_surface *src_surface,
                                            const VARectangle *src_rect,
-                                           struct i965_surface *ref_surface,
-                                           const VARectangle *ref_rect,
+                                           struct i965_surface *dst_surface,
+                                           const VARectangle *dst_rect,
                                            void *filter_param);
 
 static struct pp_module pp_modules_gen7[] = {
@@ -4021,8 +4023,8 @@ static VAStatus
 gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
                            const struct i965_surface *src_surface,
                            const VARectangle *src_rect,
-                           struct i965_surface *ref_surface,
-                           const VARectangle *ref_rect,
+                           struct i965_surface *dst_surface,
+                           const VARectangle *dst_rect,
                            void *filter_param)
 {
     struct gen7_pp_static_parameter *pp_static_parameter = pp_context->pp_static_parameter;
@@ -4051,7 +4053,7 @@ gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processi
                               1, 0);
 
     /* reference/mask surface state */
-    obj_surface = (struct object_surface *)ref_surface->base;
+    obj_surface = (struct object_surface *)dst_surface->base;
     orig_w = obj_surface->orig_width;
     orig_h = obj_surface->orig_height;
     w = obj_surface->width;
@@ -4074,8 +4076,8 @@ gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processi
     pp_context->pp_y_steps = gen7_pp_blending_y_steps;
     pp_context->pp_set_block_parameter = gen7_pp_blending_set_block_parameter;
 
-    pp_blending_context->dest_w = ALIGN(ref_rect->width, 16);
-    pp_blending_context->dest_h = ALIGN(ref_rect->height, 16);
+    pp_blending_context->dest_w = ALIGN(dst_rect->width, 16);
+    pp_blending_context->dest_h = ALIGN(dst_rect->height, 16);
 
     pp_static_parameter->grf1.blending_flags = blend_state->flags;
     pp_static_parameter->grf1.blending_alpha = blend_state->global_alpha;
@@ -5485,36 +5487,6 @@ i965_proc_picture(VADriverContextP ctx,
         }
     }
 
-    if (pipeline_param->blend_state && IS_GEN7(i965->intel.device_id)){
-        const VABlendState* blend_state = pipeline_param->blend_state;
-        struct i965_surface ref_surface;
-        VARectangle ref_rect;
-        assert(blend_state->flags & VA_BLEND_GLOBAL_ALPHA ||
-               blend_state->flags & VA_BLEND_LUMA_KEY);
-
-        assert(pipeline_param->forward_references != NULL);
-
-        VASurfaceID forward_reference = pipeline_param->forward_references[0];
-        obj_surface = SURFACE(forward_reference);
-        assert(obj_surface && obj_surface->fourcc == VA_FOURCC('N','V','1','2'));
-
-        ref_surface.base = (struct object_base *)obj_surface;
-        ref_surface.type = I965_SURFACE_TYPE_SURFACE;
-
-        ref_rect.x = 0;
-        ref_rect.y = 0;
-        ref_rect.width = obj_surface->orig_width;
-        ref_rect.height = obj_surface->orig_height;
-
-        status = i965_post_processing_internal(ctx, &proc_context->pp_context,
-                                               &src_surface,
-                                               &src_rect,
-                                               &ref_surface,
-                                               &ref_rect,
-                                               PP_NV12_BLEND,
-                                               (void*)blend_state);
-    }
-
     obj_surface = SURFACE(proc_state->current_render_target);
     assert(obj_surface);
     
@@ -5543,7 +5515,25 @@ i965_proc_picture(VADriverContextP ctx,
     }
 
     dst_surface.type = I965_SURFACE_TYPE_SURFACE;
-    i965_vpp_clear_surface(ctx, &proc_context->pp_context, obj_surface, pipeline_param->output_background_color); 
+
+    int blending_needed = 0;
+    if (HAS_BLENDING(i965) && pipeline_param->blend_state &&
+        obj_surface->fourcc == VA_FOURCC('N','V','1','2')){
+        blending_needed = 1;
+
+        const VABlendState *blend_state = pipeline_param->blend_state;
+        if (!(blend_state->flags & (VA_BLEND_GLOBAL_ALPHA|VA_BLEND_LUMA_KEY)))
+           blending_needed = 0;
+
+        if (src_rect.width != dst_rect.width   ||
+            src_rect.height != dst_rect.height ||
+            src_rect.x != dst_rect.x           ||
+            src_rect.y != dst_rect.y)
+           blending_needed = 0;
+    }
+
+    if (!blending_needed)
+        i965_vpp_clear_surface(ctx, &proc_context->pp_context, obj_surface, pipeline_param->output_background_color);
 
     // load/save doesn't support different origin offset for src and dst surface
     if (src_rect.width == dst_rect.width &&
@@ -5551,13 +5541,23 @@ i965_proc_picture(VADriverContextP ctx,
         src_rect.x == dst_rect.x &&
         src_rect.y == dst_rect.y) {
 
-        i965_post_processing_internal(ctx, &proc_context->pp_context,
-                                      &src_surface,
-                                      &src_rect,
-                                      &dst_surface,
-                                      &dst_rect,
-                                      PP_NV12_LOAD_SAVE_N12,
-                                      NULL);
+        if (blending_needed) {
+            i965_post_processing_internal(ctx, &proc_context->pp_context,
+                                          &src_surface,
+                                          &src_rect,
+                                          &dst_surface,
+                                          &dst_rect,
+                                          PP_NV12_BLEND,
+                                          (void*)pipeline_param->blend_state);
+        } else {
+            i965_post_processing_internal(ctx, &proc_context->pp_context,
+                                          &src_surface,
+                                          &src_rect,
+                                          &dst_surface,
+                                          &dst_rect,
+                                          PP_NV12_LOAD_SAVE_N12,
+                                          NULL);
+       }
     } else {
 
         i965_post_processing_internal(ctx, &proc_context->pp_context,
