@@ -3121,6 +3121,7 @@ i965_render_init(VADriverContextP ctx)
                       4096, 64);
     assert(render_state->curbe.bo);
 
+    printf("device_id: 0x%x\n", i965->intel.device_id);
     if (IS_HSW_GT1(i965->intel.device_id)) {
         render_state->max_wm_threads = 102;
     } else if (IS_HSW_GT2(i965->intel.device_id)) {
