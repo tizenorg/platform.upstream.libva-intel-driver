@@ -1286,6 +1286,8 @@ static const uint32_t pp_nv12_load_save_rgbx_gen8[][4] = {
 #include "shaders/post_processing/gen8/pl2_to_rgbx.g8b"
 };
 
+static const uint32_t pp_nv12_blending_gen8[][4] = {
+};
 
 static struct pp_module pp_modules_gen8[] = {
     {
@@ -1466,7 +1468,18 @@ static struct pp_module pp_modules_gen8[] = {
     
         gen8_pp_plx_avs_initialize,
     },
-            
+
+    {
+        {
+            "NV12_BLEND module",
+            PP_NV12_BLEND,
+            pp_nv12_blending_gen8,
+            sizeof(pp_nv12_blending_gen8),
+            NULL,
+        },
+
+        pp_null_initialize,
+    },
 };
 
           
