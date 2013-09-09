@@ -113,6 +113,9 @@ static const uint32_t pp_pa_load_save_pl3_gen5[][4] = {
 #include "shaders/post_processing/gen5_6/pa_load_save_pl3.g4b.gen5"
 };
 
+static const uint32_t pp_pa_load_save_pa_gen5[][4] = {
+};
+
 static const uint32_t pp_rgbx_load_save_nv12_gen5[][4] = {
 #include "shaders/post_processing/gen5_6/rgbx_load_save_nv12.g4b.gen5"
 };
@@ -326,6 +329,18 @@ static struct pp_module pp_modules_gen5[] = {
 
     {
         {
+            "PA_PA module",
+            PP_PA_LOAD_SAVE_PA,
+            pp_pa_load_save_pa_gen5,
+            sizeof(pp_pa_load_save_pa_gen5),
+            NULL,
+        },
+
+        pp_plx_load_save_plx_initialize,
+    },
+
+    {
+        {
             "RGBX_NV12 module",
             PP_RGBX_LOAD_SAVE_NV12,
             pp_rgbx_load_save_nv12_gen5,
@@ -412,6 +427,9 @@ static const uint32_t pp_pa_load_save_nv12_gen6[][4] = {
 
 static const uint32_t pp_pa_load_save_pl3_gen6[][4] = {
 #include "shaders/post_processing/gen5_6/pa_load_save_pl3.g6b"
+};
+
+static const uint32_t pp_pa_load_save_pa_gen6[][4] = {
 };
 
 static const uint32_t pp_rgbx_load_save_nv12_gen6[][4] = {
@@ -580,7 +598,19 @@ static struct pp_module pp_modules_gen6[] = {
     
         pp_plx_load_save_plx_initialize,
     },
-    
+
+    {
+        {
+            "PA_PA module",
+            PP_PA_LOAD_SAVE_PA,
+            pp_pa_load_save_pa_gen6,
+            sizeof(pp_pa_load_save_pa_gen6),
+            NULL,
+        },
+
+        pp_plx_load_save_plx_initialize,
+    },
+
     {
         {
             "RGBX_NV12 module",
@@ -662,6 +692,9 @@ static const uint32_t pp_pa_load_save_nv12_gen7[][4] = {
 };
 static const uint32_t pp_pa_load_save_pl3_gen7[][4] = {
 #include "shaders/post_processing/gen7/pa_to_pl3.g7b"
+};
+static const uint32_t pp_pa_load_save_pa_gen7[][4] = {
+#include "shaders/post_processing/gen7/pa_to_pa.g7b"
 };
 static const uint32_t pp_rgbx_load_save_nv12_gen7[][4] = {
 #include "shaders/post_processing/gen7/rgbx_to_nv12.g7b"
@@ -862,7 +895,19 @@ static struct pp_module pp_modules_gen7[] = {
     
         gen7_pp_plx_avs_initialize,
     },
-    
+
+    {
+        {
+            "PA_PA module",
+            PP_PA_LOAD_SAVE_PA,
+            pp_pa_load_save_pa_gen7,
+            sizeof(pp_pa_load_save_pa_gen7),
+            NULL,
+        },
+
+        gen7_pp_plx_avs_initialize,
+    },
+
     {
         {
             "RGBX_NV12 module",
@@ -946,6 +991,9 @@ static const uint32_t pp_pa_load_save_nv12_gen75[][4] = {
 };
 static const uint32_t pp_pa_load_save_pl3_gen75[][4] = {
 #include "shaders/post_processing/gen7/pa_to_pl3.g75b"
+};
+static const uint32_t pp_pa_load_save_pa_gen75[][4] = {
+#include "shaders/post_processing/gen7/pa_to_pa.g75b"
 };
 static const uint32_t pp_rgbx_load_save_nv12_gen75[][4] = {
 #include "shaders/post_processing/gen7/rgbx_to_nv12.g75b"
@@ -1113,7 +1161,19 @@ static struct pp_module pp_modules_gen75[] = {
     
         gen7_pp_plx_avs_initialize,
     },
-    
+
+    {
+        {
+            "PA_PA module",
+            PP_PA_LOAD_SAVE_PA,
+            pp_pa_load_save_pa_gen75,
+            sizeof(pp_pa_load_save_pa_gen75),
+            NULL,
+        },
+
+        gen7_pp_plx_avs_initialize,
+    },
+
     {
         {
             "RGBX_NV12 module",
@@ -5224,6 +5284,18 @@ i965_image_pl1_processing(VADriverContextP ctx,
                                                  dst_surface,
                                                  dst_rect,
                                                  PP_PA_LOAD_SAVE_PL3,
+                                                 NULL);
+        intel_batchbuffer_flush(pp_context->batch);
+        break;
+
+    case VA_FOURCC('Y', 'U', 'Y', '2'):
+    case VA_FOURCC('U', 'Y', 'V', 'Y'):
+        vaStatus = i965_post_processing_internal(ctx, i965->pp_context,
+                                                 src_surface,
+                                                 src_rect,
+                                                 dst_surface,
+                                                 dst_rect,
+                                                 PP_PA_LOAD_SAVE_PA,
                                                  NULL);
         intel_batchbuffer_flush(pp_context->batch);
         break;
