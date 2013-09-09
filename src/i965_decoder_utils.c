@@ -721,7 +721,7 @@ intel_decoder_sanity_check_input(VADriverContextP ctx,
         vaStatus = intel_decoder_check_mpeg2_parameter(ctx, decode_state);
         break;
         
-    case VAProfileH264Baseline:
+    case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
         vaStatus = intel_decoder_check_avc_parameter(ctx, decode_state);

@@ -417,7 +417,7 @@ i965_QueryConfigProfiles(VADriverContextP ctx,
 
     if (HAS_H264_DECODING(i965) ||
         HAS_H264_ENCODING(i965)) {
-        profile_list[i++] = VAProfileH264Baseline;
+        profile_list[i++] = VAProfileH264ConstrainedBaseline;
         profile_list[i++] = VAProfileH264Main;
         profile_list[i++] = VAProfileH264High;
     }
@@ -468,7 +468,7 @@ i965_QueryConfigEntrypoints(VADriverContextP ctx,
 
         break;
 
-    case VAProfileH264Baseline:
+    case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
         if (HAS_H264_DECODING(i965))
@@ -615,7 +615,7 @@ i965_CreateConfig(VADriverContextP ctx,
         }
         break;
 
-    case VAProfileH264Baseline:
+    case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
         if ((HAS_H264_DECODING(i965) && VAEntrypointVLD == entrypoint) ||
@@ -1553,7 +1553,7 @@ i965_CreateContext(VADriverContextP ctx,
     render_state->inited = 1;
 
     switch (obj_config->profile) {
-    case VAProfileH264Baseline:
+    case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
         if (!HAS_H264_DECODING(i965) &&
@@ -1982,7 +1982,7 @@ i965_BeginPicture(VADriverContextP ctx,
         vaStatus = VA_STATUS_SUCCESS;
         break;
 
-    case VAProfileH264Baseline:
+    case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
         vaStatus = VA_STATUS_SUCCESS;
@@ -4262,7 +4262,7 @@ i965_GetSurfaceAttributes(
                     if (obj_config->profile == VAProfileMPEG2Simple ||
                         obj_config->profile == VAProfileMPEG2Main) {
                         attrib_list[i].value.value.i = VA_FOURCC('I', '4', '2', '0');
-                    } else if (obj_config->profile == VAProfileH264Baseline ||
+                    } else if (obj_config->profile == VAProfileH264ConstrainedBaseline ||
                                obj_config->profile == VAProfileH264Main ||
                                obj_config->profile == VAProfileH264High) {
                         attrib_list[i].value.value.i = VA_FOURCC('N', 'V', '1', '2');
@@ -4300,7 +4300,7 @@ i965_GetSurfaceAttributes(
                             attrib_list[i].value.value.i = 0;                            
                             attrib_list[i].flags &= ~VA_SURFACE_ATTRIB_SETTABLE;
                         }
-                    } else if (obj_config->profile == VAProfileH264Baseline ||
+                    } else if (obj_config->profile == VAProfileH264ConstrainedBaseline ||
                                obj_config->profile == VAProfileH264Main ||
                                obj_config->profile == VAProfileH264High) {
                         if (attrib_list[i].value.value.i != VA_FOURCC('N', 'V', '1', '2')) {
@@ -4456,7 +4456,7 @@ i965_QuerySurfaceAttributes(VADriverContextP ctx,
             
             break;
 
-        case VAProfileH264Baseline:
+        case VAProfileH264ConstrainedBaseline:
         case VAProfileH264Main:
         case VAProfileH264High:
             attribs[i].type = VASurfaceAttribPixelFormat;
