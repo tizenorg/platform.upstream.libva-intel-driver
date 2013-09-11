@@ -3287,12 +3287,12 @@ pp_nv12_dndi_initialize(VADriverContextP ctx, struct i965_post_processing_contex
     w = obj_surface->width;
     h = obj_surface->height;
 
-    if (pp_context->stmm.bo == NULL) {
-        pp_context->stmm.bo = dri_bo_alloc(i965->intel.bufmgr,
-                                           "STMM surface",
-                                           w * h,
-                                           4096);
-        assert(pp_context->stmm.bo);
+    if (pp_dndi_context->stmm_bo == NULL) {
+        pp_dndi_context->stmm_bo = dri_bo_alloc(i965->intel.bufmgr,
+                                                "STMM surface",
+                                                w * h,
+                                                4096);
+        assert(pp_dndi_context->stmm_bo);
     }
 
     /* source UV surface index 2 */
@@ -3311,7 +3311,7 @@ pp_nv12_dndi_initialize(VADriverContextP ctx, struct i965_post_processing_contex
 
     /* source STMM surface index 20 */
     i965_pp_set_surface_state(ctx, pp_context,
-                              pp_context->stmm.bo, 0,
+                              pp_dndi_context->stmm_bo, 0,
                               orig_w, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
                               20, 1);
 
@@ -3494,12 +3494,12 @@ pp_nv12_dn_initialize(VADriverContextP ctx, struct i965_post_processing_context 
     w = obj_surface->width;
     h = obj_surface->height;
 
-    if (pp_context->stmm.bo == NULL) {
-        pp_context->stmm.bo = dri_bo_alloc(i965->intel.bufmgr,
-                                           "STMM surface",
-                                           w * h,
-                                           4096);
-        assert(pp_context->stmm.bo);
+    if (pp_dn_context->stmm_bo == NULL) {
+        pp_dn_context->stmm_bo = dri_bo_alloc(i965->intel.bufmgr,
+                                              "STMM surface",
+                                              w * h,
+                                              4096);
+        assert(pp_dn_context->stmm_bo);
     }
 
     /* source UV surface index 2 */
@@ -3518,7 +3518,7 @@ pp_nv12_dn_initialize(VADriverContextP ctx, struct i965_post_processing_context 
 
     /* source STMM surface index 20 */
     i965_pp_set_surface_state(ctx, pp_context,
-                              pp_context->stmm.bo, 0,
+                              pp_dn_context->stmm_bo, 0,
                               orig_w, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
                               20, 1);
 
@@ -3686,12 +3686,12 @@ gen7_pp_nv12_dndi_initialize(VADriverContextP ctx, struct i965_post_processing_c
     w = obj_surface->width;
     h = obj_surface->height;
 
-    if (pp_context->stmm.bo == NULL) {
-        pp_context->stmm.bo = dri_bo_alloc(i965->intel.bufmgr,
-                                           "STMM surface",
-                                           w * h,
-                                           4096);
-        assert(pp_context->stmm.bo);
+    if (pp_dndi_context->stmm_bo == NULL) {
+        pp_dndi_context->stmm_bo = dri_bo_alloc(i965->intel.bufmgr,
+                                                "STMM surface",
+                                                w * h,
+                                                4096);
+        assert(pp_dndi_context->stmm_bo);
     }
 
     /* source UV surface index 1 */
@@ -3718,7 +3718,7 @@ gen7_pp_nv12_dndi_initialize(VADriverContextP ctx, struct i965_post_processing_c
 
     /* STMM / History Statistics input surface, index 5 */
     gen7_pp_set_surface_state(ctx, pp_context,
-                              pp_context->stmm.bo, 0,
+                              pp_dndi_context->stmm_bo, 0,
                               orig_w, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
                               5, 1);
 
@@ -3755,7 +3755,7 @@ gen7_pp_nv12_dndi_initialize(VADriverContextP ctx, struct i965_post_processing_c
 
     /* STMM output surface, index 33 */
     gen7_pp_set_surface_state(ctx, pp_context,
-                              pp_context->stmm.bo, 0,
+                              pp_dndi_context->stmm_bo, 0,
                               orig_w, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
                               33, 1);
 
@@ -3933,12 +3933,12 @@ gen7_pp_nv12_dn_initialize(VADriverContextP ctx, struct i965_post_processing_con
     w = obj_surface->width;
     h = obj_surface->height;
 
-    if (pp_context->stmm.bo == NULL) {
-        pp_context->stmm.bo = dri_bo_alloc(i965->intel.bufmgr,
-                                           "STMM surface",
-                                           w * h,
-                                           4096);
-        assert(pp_context->stmm.bo);
+    if (pp_dn_context->stmm_bo == NULL) {
+        pp_dn_context->stmm_bo= dri_bo_alloc(i965->intel.bufmgr,
+                                             "STMM surface",
+                                             w * h,
+                                             4096);
+        assert(pp_dn_context->stmm_bo);
     }
 
     /* source UV surface index 1 */
@@ -3965,7 +3965,7 @@ gen7_pp_nv12_dn_initialize(VADriverContextP ctx, struct i965_post_processing_con
 
     /* STMM / History Statistics input surface, index 5 */
     gen7_pp_set_surface_state(ctx, pp_context,
-                              pp_context->stmm.bo, 0,
+                              pp_dn_context->stmm_bo, 0,
                               orig_w, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
                               33, 1);
 
@@ -5424,8 +5424,11 @@ i965_post_processing_context_finalize(struct i965_post_processing_context *pp_co
     dri_bo_unreference(pp_context->vfe_state.bo);
     pp_context->vfe_state.bo = NULL;
 
-    dri_bo_unreference(pp_context->stmm.bo);
-    pp_context->stmm.bo = NULL;
+    dri_bo_unreference(pp_context->pp_dndi_context.stmm_bo);
+    pp_context->pp_dndi_context.stmm_bo = NULL;
+
+    dri_bo_unreference(pp_context->pp_dn_context.stmm_bo);
+    pp_context->pp_dn_context.stmm_bo = NULL;
 
     for (i = 0; i < NUM_PP_MODULES; i++) {
         struct pp_module *pp_module = &pp_context->pp_modules[i];

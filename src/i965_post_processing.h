@@ -95,12 +95,14 @@ struct pp_dndi_context
 {
     int dest_w;
     int dest_h;
+    dri_bo *stmm_bo;
 };
 
 struct pp_dn_context
 {
     int dest_w;
     int dest_h;
+    dri_bo *stmm_bo;
 };
 
 struct pp_blending_context
@@ -484,10 +486,6 @@ struct i965_post_processing_context
         unsigned int size_vfe_entry;
         unsigned int size_cs_entry;
     } urb;
-
-    struct {
-        dri_bo *bo;
-    } stmm;
 
     struct pp_load_save_context pp_load_save_context;
     struct pp_scaling_context pp_scaling_context;
