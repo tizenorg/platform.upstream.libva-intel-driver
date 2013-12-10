@@ -301,6 +301,8 @@ struct hw_codec_info
     unsigned int has_blending:1;
     unsigned int has_vp8_decoding:1;
     unsigned int has_vp8_encoding:1;
+    unsigned int has_h264_mvc_decoding:1;
+    unsigned int has_h264_mvc_encoding:1;
 
     unsigned int num_filters;
     struct i965_filter filters[VAProcFilterCount];
@@ -383,6 +385,7 @@ va_enc_packed_type_to_idx(int packed_type);
 /* reserve 2 byte for internal using */
 #define CODEC_H264      0
 #define CODEC_MPEG2     1
+#define CODEC_H264_MVC  2
 
 #define H264_DELIMITER0 0x00
 #define H264_DELIMITER1 0x00

@@ -86,6 +86,11 @@
 #define HAS_VP8_ENCODING(ctx)   ((ctx)->codec_info->has_vp8_encoding && \
                                  (ctx)->intel.has_bsd)
 
+#define HAS_H264_MVC_DECODING(ctx)  ((ctx)->codec_info->has_h264_mvc_decoding && \
+                                     (ctx)->intel.has_bsd)
+
+#define HAS_H264_MVC_ENCODING(ctx)  ((ctx)->codec_info->has_h264_mvc_encoding && \
+                                     (ctx)->intel.has_bsd)
 
 static int get_sampling_from_fourcc(unsigned int fourcc);
 
@@ -320,6 +325,8 @@ static struct hw_codec_info gen75_hw_codec_info = {
     .has_di_motion_adptive = 1,
     .has_di_motion_compensated = 1,
     .has_blending = 1,
+    .has_h264_mvc_decoding = 1,
+    .has_h264_mvc_encoding = 1,
 
     .num_filters = 4,
     .filters = {
@@ -352,6 +359,8 @@ static struct hw_codec_info gen8_hw_codec_info = {
     .has_di_motion_compensated = 1,
     .has_vp8_decoding = 1,
     .has_blending = 1,
+    .has_h264_mvc_decoding = 1,
+    .has_h264_mvc_encoding = 1,
 
     .num_filters = 4,
     .filters = {
@@ -442,6 +451,12 @@ i965_QueryConfigProfiles(VADriverContextP ctx,
         profile_list[i++] = VAProfileVP8Version0_3;
     }
 
+    if (HAS_H264_MVC_DECODING(i965) ||
+        HAS_H264_MVC_ENCODING(i965)) {
+        profile_list[i++] = VAProfileH264MultiviewHigh;
+        profile_list[i++] = VAProfileH264StereoHigh;
+    }
+
     /* If the assert fails then I965_MAX_PROFILES needs to be bigger */
     assert(i <= I965_MAX_PROFILES);
     *num_profiles = i;
@@ -474,10 +489,18 @@ i965_QueryConfigEntrypoints(VADriverContextP ctx,
     case VAProfileH264High:
         if (HAS_H264_DECODING(i965))
             entrypoint_list[n++] = VAEntrypointVLD;
-        
+
         if (HAS_H264_ENCODING(i965))
             entrypoint_list[n++] = VAEntrypointEncSlice;
 
+        break;
+   case VAProfileH264MultiviewHigh:
+   case VAProfileH264StereoHigh:
+       if (HAS_H264_MVC_DECODING(i965))
+            entrypoint_list[n++] = VAEntrypointVLD;
+
+       if (HAS_H264_MVC_ENCODING(i965))
+            entrypoint_list[n++] = VAEntrypointEncSlice;
         break;
 
     case VAProfileVC1Simple:
@@ -667,6 +690,17 @@ i965_CreateConfig(VADriverContextP ctx,
             vaStatus = VA_STATUS_SUCCESS;
         else
             vaStatus = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
+
+        break;
+
+    case VAProfileH264MultiviewHigh:
+    case VAProfileH264StereoHigh:
+        if ((HAS_H264_MVC_DECODING(i965) && VAEntrypointVLD == entrypoint) ||
+            (HAS_H264_MVC_ENCODING(i965) && VAEntrypointEncSlice == entrypoint)) {
+            vaStatus = VA_STATUS_SUCCESS;
+        } else {
+            vaStatus = VA_STATUS_ERROR_UNSUPPORTED_ENTRYPOINT;
+        }
 
         break;
 
@@ -1859,7 +1893,8 @@ i965_MapBuffer(VADriverContextP ctx,
 
                 coded_buffer_segment->base.buf = buffer = (unsigned char *)(obj_buffer->buffer_store->bo->virtual) + I965_CODEDBUFFER_HEADER_SIZE;
 
-                if (coded_buffer_segment->codec == CODEC_H264) {
+                if (coded_buffer_segment->codec == CODEC_H264 ||
+                    coded_buffer_segment->codec == CODEC_H264_MVC) {
                     delimiter0 = H264_DELIMITER0;
                     delimiter1 = H264_DELIMITER1;
                     delimiter2 = H264_DELIMITER2;
@@ -1990,7 +2025,9 @@ i965_BeginPicture(VADriverContextP ctx,
     case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
-        vaStatus = VA_STATUS_SUCCESS;
+    case VAProfileH264MultiviewHigh:
+    case VAProfileH264StereoHigh:
+         vaStatus = VA_STATUS_SUCCESS;
         break;
 
     case VAProfileVC1Simple:
