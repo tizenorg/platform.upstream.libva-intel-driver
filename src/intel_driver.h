@@ -426,9 +426,6 @@ struct intel_region
                                  devid == PCI_CHIP_BROADWELL_D_RSVD_2 || \
                                  devid == PCI_CHIP_BROADWELL_MS_RSVD)
 
-#define IS_GEN8(devid)          (IS_BDW_GT1(devid) ||\
-					IS_BDW_GT2(devid) ||\
-					IS_BDW_GT2PLUS(devid))
 #define IS_GEN8(devid)          (IS_BDW_GT1(devid)      || \
                                  IS_BDW_GT2(devid)      || \
                                  IS_BDW_GT2PLUS(devid)  || \
