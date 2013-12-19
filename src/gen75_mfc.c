@@ -427,7 +427,8 @@ static void gen75_mfc_init(VADriverContextP ctx,
     int height_in_mbs = 0;
     int slice_batchbuffer_size;
 
-    if (encoder_context->codec == CODEC_H264) {
+    if (encoder_context->codec == CODEC_H264 ||
+        encoder_context->codec == CODEC_H264_MVC) {
         VAEncSequenceParameterBufferH264 *pSequenceParameter = (VAEncSequenceParameterBufferH264 *)encode_state->seq_param_ext->buffer;
         width_in_mbs = pSequenceParameter->picture_width_in_mbs;
         height_in_mbs = pSequenceParameter->picture_height_in_mbs;
@@ -1182,22 +1183,75 @@ gen75_mfc_avc_pipeline_slice_programing(VADriverContextP ctx,
     assert(pPicParameter->pic_init_qp >= 0 && pPicParameter->pic_init_qp < 52);
     assert(qp >= 0 && qp < 52);
 
-    gen75_mfc_avc_slice_state(ctx, 
-                              pPicParameter,
-                              pSliceParameter,
-                              encode_state, encoder_context,
-                              (rate_control_mode == VA_RC_CBR), qp, slice_batch);
+    if (encoder_context->codec == CODEC_H264_MVC) {
+          VAEncSequenceParameterBufferH264_MVC *mvc_seq_param   = (VAEncSequenceParameterBufferH264_MVC *)pSequenceParameter;
+          VAEncPictureParameterBufferH264_MVC  *mvc_pic_param   = (VAEncPictureParameterBufferH264_MVC *)pPicParameter;
+          VAEncSliceParameterBufferH264   *mvc_slice_param = pSliceParameter;
 
-    if ( slice_index == 0) 
-        intel_mfc_avc_pipeline_header_programing(ctx, encode_state, encoder_context, slice_batch);
+          gen75_mfc_avc_slice_state(ctx,
+                                    pPicParameter,
+                                    pSliceParameter,
+                                    encode_state, encoder_context,
+                                    (rate_control_mode == VA_RC_CBR), qp, slice_batch);
 
-    slice_header_length_in_bits = build_avc_slice_header(pSequenceParameter, pPicParameter, pSliceParameter, &slice_header);
+          if (slice_index == 0)
+             intel_mfc_avc_pipeline_header_programing(ctx, encode_state, encoder_context, slice_batch);
 
-    // slice hander
-    mfc_context->insert_object(ctx, encoder_context,
-                               (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
-                               5,  /* first 5 bytes are start code + nal unit type */
-                               1, 0, 1, slice_batch);
+          if (mvc_pic_param->view_id != 0) {
+               /* generate one extension slice header with type of 20 */
+               slice_header_length_in_bits = build_avc_mvc_slice_header(mvc_seq_param,
+                                                                        mvc_pic_param,
+                                                                        mvc_slice_param,
+                                                                        &slice_header);
+               mfc_context->insert_object(ctx, encoder_context,
+                                         (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
+                                          8,  /* first 5 bytes are start code + nal unit type */
+                                          1, 0, 1, slice_batch);
+
+           } else {
+                /* generate one mvc prefix nal */
+               slice_header_length_in_bits = build_avc_mvc_prefix_nal_unit(mvc_seq_param,
+                                                                           mvc_pic_param,
+                                                                           mvc_slice_param,
+                                                                           &slice_header);
+               mfc_context->insert_object(ctx, encoder_context,
+                                          (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
+                                          8,  /* first 8 bytes are start code + nal unit type + svc ext flag +  mvc nal extension */
+                                          0, 0, 1, slice_batch);
+               free(slice_header);
+
+               /* generate one common H264 slice header */
+               slice_header_length_in_bits = build_avc_slice_header(pSequenceParameter,
+                                                                    pPicParameter,
+                                                                    pSliceParameter,
+                                                                    &slice_header);
+
+               mfc_context->insert_object(ctx, encoder_context,
+                                          (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
+                                          5,  /* first 5 bytes are start code + nal unit type */
+                                          1, 0, 1, slice_batch);
+         }
+
+    } else {
+         gen75_mfc_avc_slice_state(ctx,
+                                  pPicParameter,
+                                  pSliceParameter,
+                                  encode_state, encoder_context,
+                                  (rate_control_mode == VA_RC_CBR), qp, slice_batch);
+
+        if ( slice_index == 0)
+            intel_mfc_avc_pipeline_header_programing(ctx, encode_state, encoder_context, slice_batch);
+
+         slice_header_length_in_bits = build_avc_slice_header(pSequenceParameter, pPicParameter, pSliceParameter, &slice_header);
+
+         // slice hander
+         mfc_context->insert_object(ctx, encoder_context,
+                                   (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
+                                    5,  /* first 5 bytes are start code + nal unit type */
+                                    1, 0, 1, slice_batch);
+    }
+
+    free(slice_header);
 
     dri_bo_map(vme_context->vme_output.bo , 1);
     msg_ptr = (unsigned char *)vme_context->vme_output.bo->virtual;
@@ -1244,7 +1298,6 @@ gen75_mfc_avc_pipeline_slice_programing(VADriverContextP ctx,
                                    1, 1, 1, 0, slice_batch);
     }
 
-    free(slice_header);
 
 }
 
@@ -1543,19 +1596,63 @@ gen75_mfc_avc_batchbuffer_slice(VADriverContextP ctx,
     if (slice_index == 0)
         intel_mfc_avc_pipeline_header_programing(ctx, encode_state, encoder_context, slice_batch);
 
-    slice_header_length_in_bits = build_avc_slice_header(pSequenceParameter, pPicParameter, pSliceParameter, &slice_header);
 
-    // slice hander
-    mfc_context->insert_object(ctx,
-                               encoder_context,
-                               (unsigned int *)slice_header,
-                               ALIGN(slice_header_length_in_bits, 32) >> 5,
-                               slice_header_length_in_bits & 0x1f,
-                               5,  /* first 5 bytes are start code + nal unit type */
-                               1,
-                               0,
-                               1,
-                               slice_batch);
+    if (encoder_context->codec == CODEC_H264_MVC) {
+        VAEncSequenceParameterBufferH264_MVC *mvc_seq_param   = (VAEncSequenceParameterBufferH264_MVC *)pSequenceParameter;
+        VAEncPictureParameterBufferH264_MVC  *mvc_pic_param   = (VAEncPictureParameterBufferH264_MVC*)pPicParameter;
+        VAEncSliceParameterBufferH264   *slice_param     = pSliceParameter;
+
+        if (mvc_pic_param->view_id != 0) {
+            /* generate one extension slice header with type of 20 */
+            slice_header_length_in_bits = build_avc_mvc_slice_header(mvc_seq_param,
+                                                                     mvc_pic_param,
+                                                                     slice_param,
+                                                                     &slice_header);
+            mfc_context->insert_object(ctx, encoder_context,
+                                       (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
+                                       8,  /* first 5 bytes are start code + nal unit type */
+                                       1, 0, 1, slice_batch);
+
+         } else {
+            /* generate one mvc prefix nal */
+            slice_header_length_in_bits = build_avc_mvc_prefix_nal_unit(mvc_seq_param,
+                                                                        mvc_pic_param,
+                                                                        slice_param,
+                                                                        &slice_header);
+            mfc_context->insert_object(ctx, encoder_context,
+                                       (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
+                                       8,  /* first 8 bytes are start code + nal unit type + svc ext flag +  mvc nal extension */
+                                       0, 0, 1, slice_batch);
+            free(slice_header);
+
+            /* generate common H264 slice header */
+            slice_header_length_in_bits = build_avc_slice_header(pSequenceParameter,
+                                                                 pPicParameter,
+                                                                 pSliceParameter,
+                                                                 &slice_header);
+            mfc_context->insert_object(ctx, encoder_context,
+                                       (unsigned int *)slice_header, ALIGN(slice_header_length_in_bits, 32) >> 5, slice_header_length_in_bits & 0x1f,
+                                       5,  /* first 5 bytes are start code + nal unit type */
+                                       1, 0, 1, slice_batch);
+       }
+
+    } else {
+
+        slice_header_length_in_bits = build_avc_slice_header(pSequenceParameter, pPicParameter, pSliceParameter, &slice_header);
+
+        // slice hander
+        mfc_context->insert_object(ctx,
+                                   encoder_context,
+                                   (unsigned int *)slice_header,
+                                   ALIGN(slice_header_length_in_bits, 32) >> 5,
+                                   slice_header_length_in_bits & 0x1f,
+                                   5,  /* first 5 bytes are start code + nal unit type */
+                                   1,
+                                   0,
+                                   1,
+                                   slice_batch);
+    }
+
     free(slice_header);
 
     intel_batchbuffer_align(slice_batch, 16); /* aligned by an Oword */
@@ -2534,6 +2631,8 @@ static VAStatus gen75_mfc_pipeline(VADriverContextP ctx,
     case VAProfileH264ConstrainedBaseline:
     case VAProfileH264Main:
     case VAProfileH264High:
+    case VAProfileH264MultiviewHigh:
+    case VAProfileH264StereoHigh:
         vaStatus = gen75_mfc_avc_encode_picture(ctx, encode_state, encoder_context);
         break;
 
