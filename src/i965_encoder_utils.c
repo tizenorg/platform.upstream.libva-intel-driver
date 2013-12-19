@@ -44,6 +44,8 @@
 #define NAL_SPS                 7
 #define NAL_PPS                 8
 #define NAL_SEI                 6
+#define NAL_PREFIX              14
+#define NAL_SLICE_EXTENSION     20
 
 #define SLICE_TYPE_P            0
 #define SLICE_TYPE_B            1
@@ -197,6 +199,25 @@ static void nal_header(avc_bitstream *bs, int nal_ref_idc, int nal_unit_type)
     avc_bitstream_put_ui(bs, 0, 1);                /* forbidden_zero_bit: 0 */
     avc_bitstream_put_ui(bs, nal_ref_idc, 2);
     avc_bitstream_put_ui(bs, nal_unit_type, 5);
+}
+
+static void
+nal_header_mvc_extension(avc_bitstream *bs,
+                     VAEncSequenceParameterBufferH264_MVC *mvc_sps_param,
+                     VAEncPictureParameterBufferH264_MVC  *mvc_pic_param,
+                     VAEncSliceParameterBufferH264   *slice_param)
+{
+    VAEncPictureParameterBufferH264 *pic_param = &mvc_pic_param->base;
+    int non_idr = !pic_param->pic_fields.bits.idr_pic_flag;
+
+    avc_bitstream_put_ui(bs, 0, 1);                             /* svc extension flag */
+    avc_bitstream_put_ui(bs, non_idr, 1);                       /* non_idr_flag */
+    avc_bitstream_put_ui(bs, 5, 6);                             /* priority_id */
+    avc_bitstream_put_ui(bs, mvc_pic_param->view_id, 10);       /* view_id */
+    avc_bitstream_put_ui(bs, 0, 3);                             /* temporal_id */
+    avc_bitstream_put_ui(bs, mvc_pic_param->anchor_pic_flag, 1);/* anchor_pic_flag */
+    avc_bitstream_put_ui(bs, mvc_pic_param->inter_view_flag, 1);/* inter_view_flag */
+    avc_bitstream_put_ui(bs, 1, 1);                             /* reserved_one_bit */
 }
 
 static void 
@@ -491,6 +512,51 @@ build_mpeg2_slice_header(VAEncSequenceParameterBufferMPEG2 *sps_param,
     avc_bitstream bs;
 
     avc_bitstream_start(&bs);
+    avc_bitstream_end(&bs);
+    *slice_header_buffer = (unsigned char *)bs.buffer;
+
+    return bs.bit_offset;
+}
+
+int
+build_avc_mvc_prefix_nal_unit(VAEncSequenceParameterBufferH264_MVC *mvc_sps_param,
+                              VAEncPictureParameterBufferH264_MVC  *mvc_pic_param,
+                              VAEncSliceParameterBufferH264   *slice_param,
+                              unsigned char **nal_unit_buffer)
+{
+    VAEncPictureParameterBufferH264 *pic_param = &mvc_pic_param->base;
+    int is_ref = !!pic_param->pic_fields.bits.reference_pic_flag;
+    avc_bitstream bs;
+
+    avc_bitstream_start(&bs);
+    nal_start_code_prefix(&bs);
+
+    nal_header(&bs, is_ref ? NAL_REF_IDC_LOW : NAL_REF_IDC_NONE, NAL_PREFIX);
+    nal_header_mvc_extension(&bs, mvc_sps_param, mvc_pic_param, slice_param);
+
+    avc_bitstream_end(&bs);
+    *nal_unit_buffer = (unsigned char *)bs.buffer;
+
+    return bs.bit_offset;
+}
+
+int
+build_avc_mvc_slice_header(VAEncSequenceParameterBufferH264_MVC *mvc_sps_param,
+                           VAEncPictureParameterBufferH264_MVC  *mvc_pic_param,
+                           VAEncSliceParameterBufferH264   *slice_param,
+                           unsigned char **slice_header_buffer)
+{
+    avc_bitstream bs;
+    VAEncPictureParameterBufferH264 *pic_param = &mvc_pic_param->base;
+    int is_ref = !!pic_param->pic_fields.bits.reference_pic_flag;
+
+    avc_bitstream_start(&bs);
+    nal_start_code_prefix(&bs);
+
+    nal_header(&bs, is_ref ? NAL_REF_IDC_HIGH : NAL_REF_IDC_NONE, NAL_SLICE_EXTENSION);
+    nal_header_mvc_extension(&bs, mvc_sps_param, mvc_pic_param, slice_param);
+    slice_header(&bs, &mvc_sps_param->base, &mvc_pic_param->base, slice_param);
+
     avc_bitstream_end(&bs);
     *slice_header_buffer = (unsigned char *)bs.buffer;
 

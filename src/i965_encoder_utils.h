@@ -33,4 +33,15 @@ build_mpeg2_slice_header(VAEncSequenceParameterBufferMPEG2 *sps_param,
                          VAEncSliceParameterBufferMPEG2 *slice_param,
                          unsigned char **slice_header_buffer);
 
+int
+build_avc_mvc_prefix_nal_unit(VAEncSequenceParameterBufferH264_MVC *mvc_sps_param,
+                              VAEncPictureParameterBufferH264_MVC  *mvc_pic_param,
+                              VAEncSliceParameterBufferH264   *slice_param,
+                              unsigned char **nal_unit_buffer);
+int
+build_avc_mvc_slice_header(VAEncSequenceParameterBufferH264_MVC *mvc_sps_param,
+                           VAEncPictureParameterBufferH264_MVC  *mvc_pic_param,
+                           VAEncSliceParameterBufferH264   *slice_param,
+                           unsigned char **slice_header_buffer);
+
 #endif /* __I965_ENCODER_UTILS_H__ */
