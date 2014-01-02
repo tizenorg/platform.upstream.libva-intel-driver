@@ -745,6 +745,13 @@ static VAStatus gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i9
                                            const VARectangle *dst_rect,
                                            void *filter_param);
 
+static VAStatus gen8_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
+                                           const struct i965_surface *src_surface,
+                                           const VARectangle *src_rect,
+                                           struct i965_surface *dst_surface,
+                                           const VARectangle *dst_rect,
+                                           void *filter_param);
+
 static VAStatus gen8_pp_plx_avs_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
                                            const struct i965_surface *src_surface,
                                            const VARectangle *src_rect,
@@ -1284,6 +1291,7 @@ static const uint32_t pp_nv12_load_save_rgbx_gen8[][4] = {
 };
 
 static const uint32_t pp_nv12_blending_gen8[][4] = {
+#include "shaders/post_processing/gen8/blending.g8b"
 };
 
 static struct pp_module pp_modules_gen8[] = {
@@ -1487,7 +1495,7 @@ static struct pp_module pp_modules_gen8[] = {
             NULL,
         },
 
-        pp_null_initialize,
+        gen8_pp_nv12_blending_initialize,
     },
 };
 
@@ -4828,6 +4836,77 @@ gen7_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processi
 
     /* reference UV surface index 3 */
     gen7_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, w * h,
+                              orig_w / 4, orig_h / 2, w, I965_SURFACEFORMAT_R8G8_UNORM,
+                              3, 0);
+
+    /* private function & data */
+    pp_context->pp_x_steps = gen7_pp_blending_x_steps;
+    pp_context->pp_y_steps = gen7_pp_blending_y_steps;
+    pp_context->private_context = &pp_context->pp_blending_context;
+    pp_context->pp_set_block_parameter = gen7_pp_blending_set_block_parameter;
+
+    pp_blending_context->dest_x = dst_rect->x;
+    pp_blending_context->dest_y = dst_rect->y;
+    pp_blending_context->dest_w = ALIGN(dst_rect->width, 16);
+    pp_blending_context->dest_h = ALIGN(dst_rect->height, 16);
+
+    pp_static_parameter->grf1.blending_flags = blend_state->flags;
+    pp_static_parameter->grf1.blending_alpha = blend_state->global_alpha;
+    pp_static_parameter->grf1.blending_min_luma = blend_state->min_luma;
+    pp_static_parameter->grf1.blending_max_luma = blend_state->max_luma;
+
+    return VA_STATUS_SUCCESS;
+}
+
+static VAStatus
+gen8_pp_nv12_blending_initialize(VADriverContextP ctx, struct i965_post_processing_context *pp_context,
+                           const struct i965_surface *src_surface,
+                           const VARectangle *src_rect,
+                           struct i965_surface *dst_surface,
+                           const VARectangle *dst_rect,
+                           void *filter_param)
+{
+    struct gen7_pp_static_parameter *pp_static_parameter = pp_context->pp_static_parameter;
+    struct pp_blending_context *pp_blending_context = (struct pp_blending_context *)&pp_context->pp_blending_context;
+    VABlendState *blend_state = (VABlendState*)filter_param;
+    struct object_surface *obj_surface;
+    int orig_w, orig_h, w, h;
+
+    /* source surface, processed result will also store here */
+    obj_surface = (struct object_surface *)src_surface->base;
+    orig_w = obj_surface->orig_width;
+    orig_h = obj_surface->orig_height;
+    w = obj_surface->width;
+    h = obj_surface->height;
+
+    /* source Y surface index 0 */
+    gen8_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, 0,
+                              orig_w / 4, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
+                              0, 0);
+
+    /* source UV surface index 1 */
+    gen8_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, w * h,
+                              orig_w / 4, orig_h / 2, w, I965_SURFACEFORMAT_R8G8_UNORM,
+                              1, 0);
+
+    /* reference/mask surface state */
+    obj_surface = (struct object_surface *)dst_surface->base;
+    orig_w = obj_surface->orig_width;
+    orig_h = obj_surface->orig_height;
+    w = obj_surface->width;
+    h = obj_surface->height;
+
+    /* reference Y surface index 2 */
+    gen8_pp_set_surface_state(ctx, pp_context,
+                              obj_surface->bo, 0,
+                              orig_w / 4, orig_h, w, I965_SURFACEFORMAT_R8_UNORM,
+                              2, 0);
+
+    /* reference UV surface index 3 */
+    gen8_pp_set_surface_state(ctx, pp_context,
                               obj_surface->bo, w * h,
                               orig_w / 4, orig_h / 2, w, I965_SURFACEFORMAT_R8G8_UNORM,
                               3, 0);
