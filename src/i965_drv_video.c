@@ -4312,6 +4312,80 @@ i965_UnlockSurface(
     return vaStatus;
 }
 
+VAStatus
+i965_LockBuffer(
+    VADriverContextP    ctx,
+    VABufferID          buf_id,
+    VABufferInfo *      buf_info_ptr
+)
+{
+    struct object_buffer *obj_buffer = NULL;
+    struct i965_driver_data *i965 = i965_driver_data(ctx);
+
+    obj_buffer = BUFFER(buf_id);
+
+    assert(obj_buffer);
+    if (!obj_buffer)
+        return VA_STATUS_ERROR_INVALID_BUFFER;
+
+    assert(obj_buffer->buffer_store);
+    if (!obj_buffer)
+        return VA_STATUS_ERROR_INVALID_BUFFER;
+
+    assert(obj_buffer->buffer_store->bo);
+    if (!obj_buffer)
+        return VA_STATUS_ERROR_INVALID_BUFFER;
+
+    // XXX, a flag should be added to object_buffer to indicate that the buffer is using by external ones or not
+    switch (obj_buffer->type) {
+    case VAImageBufferType:
+        buf_info_ptr->type = VAImageBufferType;
+        // XXX, fix me, don't care about the mem_size for now.
+        buf_info_ptr->mem_size = -1;
+        if (buf_info_ptr->mem_type & VA_SURFACE_ATTRIB_MEM_TYPE_KERNEL_DRM_BO) {
+            buf_info_ptr->mem_type = VA_SURFACE_ATTRIB_MEM_TYPE_KERNEL_DRM_BO;
+            buf_info_ptr->handle = (uintptr_t)obj_buffer->buffer_store->bo;
+        } else if (buf_info_ptr->mem_type &VA_SURFACE_ATTRIB_MEM_TYPE_KERNEL_DRM) {
+            uint32_t name;
+            if (drm_intel_bo_flink(obj_buffer->buffer_store->bo, &name) == 0) {
+                buf_info_ptr->mem_type = VA_SURFACE_ATTRIB_MEM_TYPE_KERNEL_DRM;
+                buf_info_ptr->handle = name;
+            } else {
+                assert(0);
+                return VA_STATUS_ERROR_INVALID_BUFFER;
+            }
+        } else if (buf_info_ptr->mem_type & VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME) {
+            int prime_fd; // libdrm use 'int'
+            if (drm_intel_bo_gem_export_to_prime(obj_buffer->buffer_store->bo, &prime_fd) == 0) {
+                buf_info_ptr->mem_type = VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME;
+                buf_info_ptr->handle = prime_fd;
+            } else {
+                assert(0);
+                return VA_STATUS_ERROR_INVALID_BUFFER;
+            }
+        } else {
+            assert(0);
+        }
+        break;
+    default:
+        // XXX, not interest to support other typed buffer yet
+        assert(0);
+    }
+
+    return VA_STATUS_SUCCESS;
+}
+
+VAStatus
+i965_UnlockBuffer(
+    VADriverContextP    ctx,
+    VABufferID          buf_id,
+    VABufferInfo *      buf_info_ptr
+)
+{
+    // XXX, unset the flag mentioned in i965_LockBuffer
+    return VA_STATUS_SUCCESS;
+}
+
 static VAStatus
 i965_GetSurfaceAttributes(
     VADriverContextP ctx,
@@ -5393,6 +5467,8 @@ VA_DRIVER_INIT_FUNC(  VADriverContextP ctx )
     vtable->vaBufferInfo = i965_BufferInfo;
     vtable->vaLockSurface = i965_LockSurface;
     vtable->vaUnlockSurface = i965_UnlockSurface;
+    vtable->vaLockBuffer = i965_LockBuffer;
+    vtable->vaUnlockBuffer = i965_UnlockBuffer;
     vtable->vaGetSurfaceAttributes = i965_GetSurfaceAttributes;
     vtable->vaQuerySurfaceAttributes = i965_QuerySurfaceAttributes;
     vtable->vaCreateSurfaces2 = i965_CreateSurfaces2;
