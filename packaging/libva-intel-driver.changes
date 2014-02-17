@@ -1,3 +1,7 @@
+* Tue Feb 18 2014 Zhao, Halley <halley.zhao@intel.com> staging-20130205@c2661ba
+- add LockBuffer support for VAImage/VASurface
+- add packaging folder
+
 * Mon Jul 15 2013 Zhao Halley <halley.zhao@intel.com> submit/tizen/20130703.092823@0291279
 - Enable the Bay Trail platform.
 - https://bugs.tizen.org/jira/browse/TIVI-1318
