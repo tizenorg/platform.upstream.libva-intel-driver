@@ -2,7 +2,7 @@
 %bcond_with x
 
 Name:       libva-intel-driver
-Version:    1.2.2
+Version:    1.3.0
 Release:    0
 Summary:    Intel Driver for Video Acceleration (VA) API for Linux
 Group:      System/Libraries
