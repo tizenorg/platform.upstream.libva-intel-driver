@@ -21,6 +21,7 @@ BuildRequires:  pkgconfig(libva-wayland)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-client)
 %endif
+ExclusiveArch:  %ix86 x86_64
 
 %description
 Intel Driver for Libva is a library providing the VA API video acceleration API.
