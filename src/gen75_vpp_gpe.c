@@ -648,7 +648,7 @@ vpp_gpe_process_sharpening(VADriverContextP ctx,
 
      if(vpp_gpe_ctx->is_first_frame){
          vpp_gpe_ctx->sub_shader_sum = 3;
-         struct i965_kernel * vpp_kernels;
+         struct i965_kernel * vpp_kernels = 0;
          if (IS_HASWELL(i965->intel.device_info))
              vpp_kernels = gen75_vpp_sharpening_kernels;
          else if (IS_GEN8(i965->intel.device_info))
