@@ -1,3 +1,14 @@
+Code-Review+1: Manuel Bachmann <manuel.bachmann@open.eurogiciel.org>
+Verified+1: Philippe Coval <philippe.coval@open.eurogiciel.org>
+Code-Review+1: John Whiteman <john.l.whiteman@intel.com>
+Code-Review+1: Mikko Ylinen <mikko.ylinen@intel.com>
+Code-Review+2: Philippe Coval <philippe.coval@open.eurogiciel.org>
+Submitted-by: Philippe Coval <philippe.coval@open.eurogiciel.org>
+Submitted-at: Wed, 14 Jan 2015 01:21:36 -0800
+Reviewed-on: https://review.tizen.org/gerrit/33632
+Project: platform/upstream/libva-intel-driver
+Branch: refs/heads/tizen
+
 Reviewed-on: https://review.tizen.org/gerrit/33632
 Project: platform/upstream/libva-intel-driver
 Branch: refs/heads/tizen
